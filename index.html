@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Taijyu car ー知育ゲームー</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+  html,body { height:100%; overflow:hidden; font-family:"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif; background:#eaf4ff; user-select:none; -webkit-user-select:none; }
+  #game { position:relative; width:100%; height:100%; background:linear-gradient(#bfe3ff 0%,#dff0ff 55%,#9ad06a 55%,#7cbf52 100%); overflow:hidden; }
+
+  /* clouds */
+  .cloud { position:absolute; background:#fff; border-radius:50px; opacity:.85; }
+
+  /* road */
+  #road { position:absolute; left:0; bottom:6%; width:100%; height:24%; background:#5a5a5a; border-top:4px solid #4a4a4a; }
+  #lane { position:absolute; left:0; top:50%; width:100%; height:6px; transform:translateY(-50%);
+    background:repeating-linear-gradient(90deg,#ffd84d 0 40px, transparent 40px 80px); }
+
+  /* car */
+  .car { position:absolute; bottom:11%; cursor:pointer; will-change:transform; }
+  .car svg { display:block; transform:scaleX(-1); filter:drop-shadow(0 6px 6px rgba(0,0,0,.25)); }
+  .flyer svg { transform:none; }
+
+  /* title */
+  #title { position:absolute; top:10px; left:0; width:100%; text-align:center; color:#1d5fa5;
+    font-size:clamp(18px,5vw,30px); font-weight:bold; text-shadow:0 2px 0 #fff; pointer-events:none; z-index:5; }
+  #hint { position:absolute; top:calc(10px + clamp(24px,6vw,40px)); width:100%; text-align:center;
+    color:#2c7a2c; font-size:clamp(12px,3.5vw,16px); text-shadow:0 1px 0 #fff; pointer-events:none; z-index:5; }
+
+  /* trace overlay */
+  #overlay { position:absolute; inset:0; background:rgba(0,0,0,.55); display:none; z-index:20;
+    flex-direction:column; align-items:center; justify-content:center; }
+  #overlay.show { display:flex; }
+  #panel { background:#fff; border-radius:28px; padding:18px 18px 12px; box-shadow:0 12px 40px rgba(0,0,0,.4);
+    display:flex; flex-direction:column; align-items:center; max-width:92vw; }
+  #charLabel { font-size:clamp(20px,6vw,30px); color:#d85a30; font-weight:bold; margin-bottom:6px; }
+  #traceWrap { position:relative; }
+  canvas#trace { background:#fffef7; border:4px dashed #f0997b; border-radius:20px; touch-action:none; }
+  #btns { display:flex; gap:12px; margin-top:12px; }
+  .btn { border:none; border-radius:18px; padding:12px 22px; font-size:clamp(15px,4.5vw,20px);
+    font-weight:bold; color:#fff; cursor:pointer; font-family:inherit; }
+  .btn.say { background:#1d9e75; }
+  .btn.clear { background:#888780; }
+  .btn.close { background:#d4537e; }
+  #star { position:absolute; font-size:80px; top:40%; left:50%; transform:translate(-50%,-50%) scale(0);
+    pointer-events:none; transition:transform .4s cubic-bezier(.2,1.4,.5,1); z-index:25; }
+  #star.pop { transform:translate(-50%,-50%) scale(1); }
+</style>
+</head>
+<body>
+<div id="game">
+  <div id="title">Taijyu car ー知育ゲームー</div>
+  <div id="hint">くるまを タップしてね！</div>
+  <div id="road"><div id="lane"></div></div>
+  <div id="star">⭐</div>
+</div>
+
+<div id="overlay">
+  <div id="panel">
+    <div id="charLabel">あ</div>
+    <div id="traceWrap">
+      <canvas id="trace" width="300" height="300"></canvas>
+    </div>
+    <div id="btns">
+      <button class="btn say">🔊 おと</button>
+      <button class="btn clear">けす</button>
+      <button class="btn close">とじる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const HIRA = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split("");
+const COLORS = ["#e24b4a","#378add","#ef9f27","#1d9e75","#d4537e","#7f77dd","#d85a30","#5f5e5a"];
+
+const game = document.getElementById("game");
+
+/* clouds */
+function makeCloud(x,y,s){
+  const c=document.createElement("div"); c.className="cloud";
+  c.style.left=x+"%"; c.style.top=y+"%"; c.style.width=(60*s)+"px"; c.style.height=(26*s)+"px";
+  game.appendChild(c);
+}
+makeCloud(12,12,1.1); makeCloud(60,8,1.4); makeCloud(80,20,.9); makeCloud(35,18,1);
+
+function shade(hex,p){
+  const n=parseInt(hex.slice(1),16); let r=n>>16,g=(n>>8)&255,b=n&255;
+  r=Math.max(0,Math.min(255,r+p*2.55|0)); g=Math.max(0,Math.min(255,g+p*2.55|0)); b=Math.max(0,Math.min(255,b+p*2.55|0));
+  return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+/* ---- detailed style: gradients, gloss, highlights, ground shadow ---- */
+const OL = "#1a1a1a";              // outline color
+const SW = 3.0;                    // outline width
+let gradId = 0;                    // unique id per spawned svg
+
+/* glossy wheel with metallic hub */
+function wheelG(x){
+  return `<circle cx="${x}" cy="74" r="13.5" fill="url(#tire${gradId})"/>
+          <circle cx="${x}" cy="74" r="13.5" fill="none" stroke="${OL}" stroke-width="${SW}"/>
+          <circle cx="${x}" cy="74" r="6" fill="url(#hub${gradId})" stroke="${OL}" stroke-width="1.6"/>
+          <circle cx="${x}" cy="74" r="1.8" fill="#6b6b6b"/>`;
+}
+function wheels(x1,x2){ return wheelG(x1)+wheelG(x2); }
+function wheel(x){ return wheelG(x); }
+
+/* glass window with diagonal highlight */
+function win(x,y,w,h){
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="url(#glass${gradId})" stroke="${OL}" stroke-width="${SW}"/>
+          <path d="M${x+2} ${y+2} L${x+w-2} ${y+2} L${x+2} ${y+h-2} Z" fill="#ffffff" opacity="0.32"/>`;
+}
+/* openable door (keeps class="door") with subtle shading */
+function door(x,c){
+  return `<g class="door" style="transform-origin:${x+15}px 52px; transition:transform .45s ease;">
+    <rect class="doorpanel" x="${x}" y="38" width="30" height="28" rx="5" fill="${shade(c,-16)}" stroke="${OL}" stroke-width="${SW}"/>
+    <rect x="${x+2}" y="40" width="26" height="6" rx="3" fill="#ffffff" opacity="0.18"/>
+    <circle cx="${x+24}" cy="52" r="2.4" fill="${OL}"/></g>`;
+}
+
+/* per-car gradient defs + ground shadow. bodyHex drives the body gradient. */
+function defs(bodyHex){
+  const light = shade(bodyHex, 26), dark = shade(bodyHex, -22);
+  return `<defs>
+    <linearGradient id="body${gradId}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${light}"/><stop offset="0.55" stop-color="${bodyHex}"/><stop offset="1" stop-color="${dark}"/>
+    </linearGradient>
+    <linearGradient id="glass${gradId}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dff0ff"/><stop offset="0.5" stop-color="#9ecbf0"/><stop offset="1" stop-color="#5d92c0"/>
+    </linearGradient>
+    <radialGradient id="tire${gradId}" cx="0.35" cy="0.35" r="0.8">
+      <stop offset="0" stop-color="#5a5a5a"/><stop offset="0.6" stop-color="#222"/><stop offset="1" stop-color="#000"/>
+    </radialGradient>
+    <radialGradient id="hub${gradId}" cx="0.35" cy="0.35" r="0.85">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.7" stop-color="#c9c9c9"/><stop offset="1" stop-color="#8a8a8a"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="86" cy="90" rx="78" ry="7" fill="#000" opacity="0.13" stroke="none"/>`;
+}
+/* gradient body-fill reference for the current svg */
+function bodyFill(){ return `url(#body${gradId})`; }
+/* a thin top highlight along a horizontal band */
+function gloss(x,y,w){ return `<rect x="${x}" y="${y}" width="${w}" height="5" rx="2.5" fill="#ffffff" opacity="0.30"/>`; }
+
+const SVGHEAD = `<svg width="164" height="96" viewBox="0 0 164 96"><g stroke="${OL}" stroke-width="${SW}" stroke-linejoin="round" stroke-linecap="round">`;
+const SVGFOOT = `</g></svg>`;
+
+/* ---- vehicle library (each returns full SVG, contains a .door group) ---- */
+const VEHICLES = {
+  // 1 ワゴン車（普通車） 水色
+  car: c=>`${SVGHEAD}${defs(c)}<g transform="translate(164,0) scale(-1,1)">
+    <path d="M14 66 L14 40 Q14 26 30 26 L120 26 Q140 26 148 40 L150 66 Z" fill="${bodyFill()}"/>
+    ${gloss(30,30,108)}
+    ${win(30,32,28,18)} ${win(64,32,30,18)}
+    ${door(102,c)}
+    <line x1="14" y1="56" x2="150" y2="56" stroke="${OL}" stroke-width="1.5" opacity="0.5"/>
+    ${wheels(44,118)}
+    <circle cx="150" cy="50" r="4" fill="#fff3b0" stroke="${OL}" stroke-width="1.4"/>
+    </g>${SVGFOOT}`,
+
+  // 2 クレーン車 オレンジ
+  crane: c=>`${SVGHEAD}${defs(c)}
+    <line x1="58" y1="40" x2="150" y2="8" stroke="${OL}" stroke-width="5"/>
+    <line x1="58" y1="44" x2="150" y2="12" stroke="#ffcf4d" stroke-width="3"/>
+    <line x1="150" y1="10" x2="150" y2="24" stroke="${OL}" stroke-width="2.5"/>
+    <path d="M44 26 L78 26 L78 44 L44 44 Z" fill="${bodyFill()}"/>
+    ${win(48,30,24,12)}
+    <rect x="6" y="44" width="150" height="24" rx="6" fill="${bodyFill()}"/>
+    ${gloss(12,47,140)}
+    ${door(96,c)}
+    ${wheels(36,128)} ${wheel(82)}
+    ${SVGFOOT}`,
+
+  // 3 パトカー 白黒
+  police: c=>`${SVGHEAD}${defs('#f4f6fa')}<g transform="translate(164,0) scale(-1,1)">
+    <path d="M14 66 L14 42 Q14 28 30 28 L116 28 Q138 28 148 42 L150 66 Z" fill="${bodyFill()}"/>
+    <rect x="14" y="50" width="136" height="11" fill="${OL}"/>
+    ${gloss(20,31,90)}
+    ${win(34,34,26,16)} ${win(66,34,28,16)}
+    <rect x="60" y="16" width="12" height="9" rx="2" fill="#e23b3b"/>
+    <rect x="74" y="16" width="12" height="9" rx="2" fill="#2f7fe2"/>
+    ${door(102,'#e8e8e8')}
+    ${wheels(44,118)}
+    </g>${SVGFOOT}`,
+
+  // 4 救急車 白に赤
+  ambulance: c=>`${SVGHEAD}${defs('#f4f6fa')}<g transform="translate(164,0) scale(-1,1)">
+    <path d="M12 68 L12 30 L96 30 Q110 30 116 40 L150 46 Q156 48 156 58 L156 68 Z" fill="${bodyFill()}"/>
+    ${gloss(16,32,90)}
+    ${win(120,46,24,14)}
+    <rect x="12" y="60" width="144" height="8" fill="#e23b3b"/>
+    <rect x="46" y="40" width="9" height="22" fill="#e23b3b"/>
+    <rect x="36" y="47" width="29" height="8" fill="#e23b3b"/>
+    <rect x="52" y="18" width="26" height="9" rx="2" fill="#ffe14d"/>
+    ${door(92,'#eee')}
+    ${wheels(46,124)}
+    </g>${SVGFOOT}`,
+
+  // 5 消防車 赤
+  fire: c=>`${SVGHEAD}${defs('#e23b3b')}
+    <line x1="34" y1="40" x2="120" y2="18" stroke="${OL}" stroke-width="5"/>
+    <line x1="34" y1="44" x2="120" y2="22" stroke="#c9c9c9" stroke-width="3"/>
+    <path d="M10 68 L10 44 L40 44 L46 30 L70 30 L70 44 L156 44 L156 68 Z" fill="${bodyFill()}"/>
+    ${gloss(14,46,140)}
+    ${win(48,33,18,11)}
+    <rect x="92" y="48" width="42" height="16" rx="3" fill="#a82424" stroke="${OL}" stroke-width="2.5"/>
+    <circle cx="102" cy="56" r="3.2" fill="#ffe14d"/><circle cx="118" cy="56" r="3.2" fill="#ffe14d"/>
+    ${door(74,'#e23b3b')}
+    ${wheels(40,124)}
+    ${SVGFOOT}`,
+
+  // 6 パッカー車（ゴミ収集車） 青
+  garbage: c=>`${SVGHEAD}${defs(c)}
+    <path d="M58 24 L150 24 Q156 24 156 32 L156 68 L58 68 Z" fill="${bodyFill()}"/>
+    <path d="M58 30 L46 30 L46 68 L58 68 Z" fill="${shade(c,-16)}"/>
+    <path d="M10 68 L10 44 Q10 38 16 38 L46 38 L46 68 Z" fill="${bodyFill()}"/>
+    ${gloss(62,28,88)}
+    ${win(16,42,24,13)}
+    <rect x="118" y="56" width="40" height="12" fill="${shade(c,-22)}"/>
+    ${door(78,c)}
+    ${wheels(36,128)}
+    ${SVGFOOT}`,
+
+  // 7 ミキサー車 緑
+  mixer: c=>`${SVGHEAD}${defs(c)}
+    <ellipse cx="98" cy="42" rx="52" ry="26" fill="${shade(c,14)}"/>
+    <ellipse cx="84" cy="34" rx="34" ry="10" fill="#ffffff" opacity="0.22" stroke="none"/>
+    <path d="M58 24 L138 30 L130 58 L66 62 Z" fill="${shade(c,-6)}" opacity="0.45" stroke="none"/>
+    <path d="M10 68 L10 46 Q10 40 16 40 L46 40 L46 68 Z" fill="${bodyFill()}"/>
+    ${win(16,44,24,13)}
+    ${door(74,c)}
+    ${wheels(36,128)} ${wheel(82)}
+    ${SVGFOOT}`,
+
+  // 8 スポーツカー 赤（低い車）
+  sports: c=>`${SVGHEAD}${defs(c)}
+    <path d="M8 66 Q14 52 44 50 Q60 34 96 34 Q132 36 152 54 Q158 58 156 66 Z" fill="${bodyFill()}"/>
+    <path d="M16 56 Q40 50 70 50 Q110 50 150 58" stroke="#ffffff" stroke-width="3" opacity="0.32" fill="none"/>
+    <path d="M54 48 Q70 38 94 38 Q112 39 122 50 Z" fill="url(#glass${gradId})" stroke="${OL}" stroke-width="${SW}"/>
+    <path d="M150 52 L158 54 L156 62 L150 62 Z" fill="#fff3b0"/>
+    ${door(76,c)}
+    ${wheels(44,122)}
+    ${SVGFOOT}`,
+
+  // 9 ラリーカー 緑にゼッケン
+  rally: c=>`${SVGHEAD}${defs(c)}
+    <path d="M8 66 Q16 50 46 48 Q64 32 100 32 Q134 34 152 52 Q158 56 156 66 Z" fill="${bodyFill()}"/>
+    <path d="M18 54 Q44 48 74 48 Q112 48 150 56" stroke="#ffffff" stroke-width="3" opacity="0.30" fill="none"/>
+    <path d="M56 46 Q72 36 96 36 Q112 37 122 48 Z" fill="url(#glass${gradId})" stroke="${OL}" stroke-width="${SW}"/>
+    <circle cx="42" cy="52" r="10" fill="#fff" stroke="${OL}" stroke-width="1.6"/>
+    <text x="42" y="56" font-size="12" font-weight="bold" text-anchor="middle" fill="${OL}" stroke="none" transform="scale(-1,1) translate(-84,0)">7</text>
+    <rect x="118" y="22" width="32" height="6" rx="2" fill="${shade(c,-25)}"/>
+    ${door(78,c)}
+    ${wheels(44,122)}
+    ${SVGFOOT}`,
+
+  // 10 トラック 青いキャブ + 荷台
+  truck: c=>`${SVGHEAD}${defs(c)}
+    <rect x="62" y="26" width="94" height="42" rx="5" fill="${shade(c,24)}"/>
+    ${gloss(66,29,86)}
+    <path d="M10 68 L10 42 Q10 36 16 36 L48 36 L56 50 L56 68 Z" fill="${bodyFill()}"/>
+    ${win(16,40,26,13)}
+    ${door(86,shade(c,24))}
+    ${wheels(36,96)} ${wheel(132)}
+    ${SVGFOOT}`,
+
+  // 11 キャリーカー 車を運ぶ
+  carrier: c=>`${SVGHEAD}${defs(c)}
+    <line x1="58" y1="14" x2="156" y2="14" stroke="${OL}" stroke-width="4"/>
+    <rect x="62" y="18" width="28" height="15" rx="3" fill="#2f7fe2"/>
+    <rect x="98" y="18" width="28" height="15" rx="3" fill="#3bb24a"/>
+    <line x1="58" y1="40" x2="156" y2="40" stroke="${OL}" stroke-width="4"/>
+    <rect x="72" y="44" width="26" height="13" rx="3" fill="#e23b3b"/>
+    <path d="M10 68 L10 44 Q10 38 16 38 L48 38 L48 68 Z" fill="${bodyFill()}"/>
+    ${gloss(14,41,34)}
+    ${win(16,42,24,13)}
+    ${door(108,'#ffcf4d')}
+    ${wheels(34,130)} ${wheel(92)}
+    ${SVGFOOT}`,
+};
+const VTYPES = Object.keys(VEHICLES);
+/* default colors matching the reference sheet */
+const VCOLOR = { car:"#7ec8f0", crane:"#f6a32a", police:null, ambulance:null, fire:null,
+  garbage:"#2f7fe2", mixer:"#3bb24a", sports:"#e23b3b", rally:"#3bb24a", truck:"#2f7fe2", carrier:"#ffcf4d" };
+
+function carSVG(){
+  gradId++;
+  const type = VTYPES[Math.floor(Math.random()*VTYPES.length)];
+  const fixed = VCOLOR[type];
+  const color = fixed || COLORS[Math.floor(Math.random()*COLORS.length)];
+  return VEHICLES[type](color);
+}
+
+/* ---- flyers: airplane & bird (face right; sky lane) ---- */
+const FLYERS = {
+  // 飛行機 白＋赤ライン
+  plane: ()=>{ gradId++; return `<svg width="180" height="86" viewBox="0 0 180 86">
+    <defs>
+      <linearGradient id="pbody${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="0.55" stop-color="#f1f4f8"/><stop offset="1" stop-color="#c9d0d9"/></linearGradient>
+      <linearGradient id="pglass${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dff0ff"/><stop offset="1" stop-color="#5d92c0"/></linearGradient>
+    </defs>
+    <ellipse cx="92" cy="80" rx="70" ry="5" fill="#000" opacity="0.1"/>
+    <g stroke="${OL}" stroke-width="${SW}" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M60 40 L86 14 L98 14 L86 40 Z" fill="#cdd4dd"/>
+    <path d="M40 54 L20 78 L34 78 L56 56 Z" fill="#cdd4dd"/>
+    <path d="M14 50 Q10 42 22 40 L130 36 Q150 36 168 46 Q176 50 168 54 L36 58 Q18 58 14 50 Z" fill="url(#pbody${gradId})"/>
+    <path d="M24 42 Q80 39 150 43" stroke="#ffffff" stroke-width="2.5" opacity="0.5" fill="none"/>
+    <line x1="40" y1="48" x2="120" y2="46" stroke="#e23b3b" stroke-width="5"/>
+    <circle cx="58" cy="47" r="4" fill="url(#pglass${gradId})"/><circle cx="74" cy="47" r="4" fill="url(#pglass${gradId})"/>
+    <g class="door" style="transform-origin:104px 47px; transition:transform .45s ease;">
+      <rect class="doorpanel" x="92" y="40" width="26" height="15" rx="5" fill="#e9eef5" stroke="${OL}" stroke-width="${SW}"/>
+      <circle cx="112" cy="47" r="2.4" fill="${OL}"/></g>
+    <circle cx="160" cy="48" r="3" fill="#ffe14d" stroke="${OL}" stroke-width="1.2"/>
+  </g></svg>`; },
+
+  // 鳥 黄色い小鳥
+  bird: ()=>{ gradId++; return `<svg width="150" height="96" viewBox="0 0 150 96">
+    <defs>
+      <radialGradient id="bbody${gradId}" cx="0.4" cy="0.32" r="0.85"><stop offset="0" stop-color="#ffe488"/><stop offset="0.6" stop-color="#ffd23b"/><stop offset="1" stop-color="#e6a91e"/></radialGradient>
+    </defs>
+    <ellipse cx="78" cy="86" rx="56" ry="5" fill="#000" opacity="0.1"/>
+    <g stroke="${OL}" stroke-width="${SW}" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M30 70 Q14 74 8 64 Q24 60 34 62 Z" fill="#f0a020"/>
+    <ellipse cx="74" cy="56" rx="44" ry="28" fill="url(#bbody${gradId})"/>
+    <circle cx="108" cy="44" r="20" fill="url(#bbody${gradId})"/>
+    <ellipse cx="62" cy="44" rx="22" ry="8" fill="#ffffff" opacity="0.3" stroke="none"/>
+    <path d="M60 50 Q40 22 22 30 Q34 50 54 58 Z" fill="#f0a020" class="wing"/>
+    <circle cx="116" cy="40" r="4" fill="${OL}"/>
+    <circle cx="117.4" cy="38.6" r="1.3" fill="#fff" stroke="none"/>
+    <path d="M126 44 L144 40 L126 52 Z" fill="#f6a32a"/>
+    <g class="door" style="transform-origin:96px 60px; transition:transform .45s ease;">
+      <path class="doorpanel" d="M78 54 Q96 50 112 56 Q98 74 80 70 Z" fill="#f0b94a" stroke="${OL}" stroke-width="${SW}"/></g>
+  </g></svg>`; },
+};
+const FTYPES = Object.keys(FLYERS);
+function flyerSVG(){ return FLYERS[FTYPES[Math.floor(Math.random()*FTYPES.length)]](); }
+
+/* ---- spawn moving cars ---- */
+let charIndex = 0;
+function spawnCar(){
+  const car=document.createElement("div"); car.className="car";
+  car.innerHTML=carSVG();
+  const ch=HIRA[charIndex % HIRA.length]; charIndex++;
+  car.dataset.char=ch;
+  // vertical jitter on the road
+  car.style.bottom=(9+Math.random()*6)+"%";
+  car.style.left="-170px";
+  game.appendChild(car);
+
+  const dur=5500+Math.random()*3500;
+  const startT=performance.now();
+  const screenW=window.innerWidth+200;
+  function step(now){
+    if(car._stopped){ return; }
+    const t=(now-startT)/dur;
+    if(t>=1){ car.remove(); return; }
+    car.style.transform=`translateX(${t*screenW}px)`;
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  car.addEventListener("click",()=>openCar(car,ch));
+}
+setInterval(()=>{ if(document.querySelectorAll(".car").length<4) spawnCar(); },1600);
+spawnCar();
+
+/* ---- spawn flying things (sky) every 10 seconds ---- */
+function spawnFlyer(){
+  const f=document.createElement("div"); f.className="car flyer";
+  f.innerHTML=flyerSVG();
+  const ch=HIRA[charIndex % HIRA.length]; charIndex++;
+  f.dataset.char=ch;
+  // high in the sky
+  f.style.bottom=(58+Math.random()*22)+"%";
+  f.style.left="-190px";
+  game.appendChild(f);
+
+  const dur=8000+Math.random()*3000;
+  const startT=performance.now();
+  const screenW=window.innerWidth+220;
+  const bob=Math.random()*10+4;
+  function step(now){
+    if(f._stopped){ return; }
+    const t=(now-startT)/dur;
+    if(t>=1){ f.remove(); return; }
+    const y=Math.sin(t*Math.PI*3)*bob;
+    f.style.transform=`translate(${t*screenW}px, ${y}px)`;
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+  f.addEventListener("click",()=>openCar(f,ch));
+}
+setInterval(spawnFlyer, 10000);
+setTimeout(spawnFlyer, 2500);
+
+/* ---- open door -> show hiragana, then trace panel ---- */
+const overlay=document.getElementById("overlay");
+const charLabel=document.getElementById("charLabel");
+const star=document.getElementById("star");
+let currentChar="あ";
+
+function openCar(car,ch){
+  car._stopped=true;
+  const door=car.querySelector(".door");
+  if(door) door.style.transform="rotateY(-110deg)";
+  // little floating hiragana out of the door
+  const pop=document.createElement("div");
+  pop.textContent=ch;
+  pop.style.cssText=`position:absolute;font-size:34px;font-weight:bold;color:#fff;
+    text-shadow:0 2px 4px rgba(0,0,0,.4);pointer-events:none;z-index:8;
+    transition:transform .6s ease,opacity .6s ease;`;
+  const r=car.getBoundingClientRect();
+  pop.style.left=(r.left+r.width*0.6)+"px"; pop.style.top=(r.top+10)+"px";
+  document.body.appendChild(pop);
+  requestAnimationFrame(()=>{ pop.style.transform="translateY(-50px)"; });
+  speak(ch);
+  setTimeout(()=>{ pop.style.opacity="0"; },600);
+  setTimeout(()=>{ pop.remove(); openTrace(ch); car.remove(); },700);
+}
+
+/* ---- trace panel ---- */
+const canvas=document.getElementById("trace");
+const ctx=canvas.getContext("2d");
+function fitCanvas(){
+  const size=Math.min(300, window.innerWidth*0.8);
+  canvas.width=size; canvas.height=size;
+}
+function drawGuide(ch){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // faint guide character to trace over
+  ctx.save();
+  ctx.fillStyle="#f3d9cc";
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.font=`bold ${canvas.width*0.7}px "Hiragino Maru Gothic ProN","Yu Gothic",sans-serif`;
+  ctx.fillText(ch, canvas.width/2, canvas.width/2+canvas.width*0.02);
+  buildMask(ch);
+  // grid
+  ctx.strokeStyle="rgba(216,90,48,.25)"; ctx.lineWidth=1; ctx.setLineDash([6,6]);
+  ctx.beginPath(); ctx.moveTo(canvas.width/2,0); ctx.lineTo(canvas.width/2,canvas.width);
+  ctx.moveTo(0,canvas.width/2); ctx.lineTo(canvas.width,canvas.width/2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+function openTrace(ch){
+  currentChar=ch; charLabel.textContent=ch;
+  fitCanvas(); drawGuide(ch);
+  overlay.classList.add("show");
+}
+
+/* glyph mask for forgiving hit-testing */
+let mask=null, maskW=0, maskTol=0;
+function buildMask(ch){
+  maskW=canvas.width;
+  const off=document.createElement("canvas"); off.width=maskW; off.height=maskW;
+  const o=off.getContext("2d");
+  o.fillStyle="#000"; o.textAlign="center"; o.textBaseline="middle";
+  o.font=`bold ${maskW*0.7}px "Hiragino Maru Gothic ProN","Yu Gothic",sans-serif`;
+  o.fillText(ch, maskW/2, maskW/2+maskW*0.02);
+  mask=o.getImageData(0,0,maskW,maskW).data;
+  maskTol=Math.round(maskW*0.10); // how far off the line still counts (~10% of canvas)
+}
+function onGlyph(x,y){
+  if(!mask) return false;
+  const t=maskTol;
+  for(let dy=-t; dy<=t; dy+=4){
+    for(let dx=-t; dx<=t; dx+=4){
+      const px=Math.round(x+dx), py=Math.round(y+dy);
+      if(px<0||py<0||px>=maskW||py>=maskW) continue;
+      if(mask[(py*maskW+px)*4+3] > 40) return true; // alpha present = on the glyph
+    }
+  }
+  return false;
+}
+
+/* drawing */
+let drawing=false, last=null, totalPts=0, hitPts=0;
+function pos(e){
+  const r=canvas.getBoundingClientRect();
+  const p=e.touches?e.touches[0]:e;
+  return {x:(p.clientX-r.left)*(canvas.width/r.width), y:(p.clientY-r.top)*(canvas.height/r.height)};
+}
+function start(e){ drawing=true; last=pos(e); sampleHit(last); e.preventDefault(); }
+function sampleHit(p){ totalPts++; if(onGlyph(p.x,p.y)) hitPts++; }
+function move(e){
+  if(!drawing) return;
+  const p=pos(e);
+  ctx.strokeStyle="#1d9e75"; ctx.lineWidth=canvas.width*0.05;
+  ctx.lineCap="round"; ctx.lineJoin="round";
+  ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke();
+  sampleHit(p);
+  last=p; e.preventDefault();
+}
+function end(){
+  if(!drawing) return;
+  drawing=false;
+  // 正解条件: ある程度の長さをなぞり、その6割以上が文字の上ならOK
+  const enough = totalPts>=6;
+  const accuracy = totalPts ? hitPts/totalPts : 0;
+  if(enough && accuracy>=0.6){
+    speak(currentChar);
+    star.classList.add("pop");
+    setTimeout(()=>star.classList.remove("pop"),700);
+  }
+  totalPts=0; hitPts=0;
+}
+canvas.addEventListener("mousedown",start); canvas.addEventListener("mousemove",move);
+window.addEventListener("mouseup",end);
+canvas.addEventListener("touchstart",start,{passive:false});
+canvas.addEventListener("touchmove",move,{passive:false});
+canvas.addEventListener("touchend",end);
+
+/* buttons */
+document.querySelector(".btn.say").onclick=()=>speak(currentChar);
+document.querySelector(".btn.clear").onclick=()=>drawGuide(currentChar);
+document.querySelector(".btn.close").onclick=()=>{ overlay.classList.remove("show"); spawnCar(); };
+
+/* ---- speech (Japanese hiragana voice) ---- */
+let jpVoice=null;
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();
+  jpVoice=vs.find(v=>/ja|JP/i.test(v.lang))||null;
+}
+pickVoice();
+if(typeof speechSynthesis!=="undefined") speechSynthesis.onvoiceschanged=pickVoice;
+function speak(ch){
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(ch);
+    u.lang="ja-JP"; u.rate=0.7; u.pitch=1.2;
+    if(jpVoice) u.voice=jpVoice;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+window.addEventListener("resize",()=>{ if(overlay.classList.contains("show")){ fitCanvas(); drawGuide(currentChar);} });
+</script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Taijyu car ー知育ゲームー</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+  html,body { height:100%; overflow:hidden; font-family:"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif; background:#eaf4ff; user-select:none; -webkit-user-select:none; }
+  #game { position:relative; width:100%; height:100%; background:linear-gradient(#bfe3ff 0%,#dff0ff 55%,#9ad06a 55%,#7cbf52 100%); overflow:hidden; }
+
+  /* clouds */
+  .cloud { position:absolute; background:#fff; border-radius:50px; opacity:.85; }
+
+  /* road */
+  #road { position:absolute; left:0; bottom:6%; width:100%; height:24%; background:#5a5a5a; border-top:4px solid #4a4a4a; }
+  #lane { position:absolute; left:0; top:50%; width:100%; height:6px; transform:translateY(-50%);
+    background:repeating-linear-gradient(90deg,#ffd84d 0 40px, transparent 40px 80px); }
+
+  /* car */
+  .car { position:absolute; bottom:11%; cursor:pointer; will-change:transform; }
+  .car svg { display:block; filter:drop-shadow(0 6px 6px rgba(0,0,0,.25)); }
+
+  /* title */
+  #title { position:absolute; top:10px; left:0; width:100%; text-align:center; color:#1d5fa5;
+    font-size:clamp(18px,5vw,30px); font-weight:bold; text-shadow:0 2px 0 #fff; pointer-events:none; z-index:5; }
+  #hint { position:absolute; top:calc(10px + clamp(24px,6vw,40px)); width:100%; text-align:center;
+    color:#2c7a2c; font-size:clamp(12px,3.5vw,16px); text-shadow:0 1px 0 #fff; pointer-events:none; z-index:5; }
+
+  /* trace overlay */
+  #overlay { position:absolute; inset:0; background:rgba(0,0,0,.55); display:none; z-index:20;
+    flex-direction:column; align-items:center; justify-content:center; }
+  #overlay.show { display:flex; }
+  #panel { background:#fff; border-radius:28px; padding:18px 18px 12px; box-shadow:0 12px 40px rgba(0,0,0,.4);
+    display:flex; flex-direction:column; align-items:center; max-width:92vw; }
+  #charLabel { font-size:clamp(20px,6vw,30px); color:#d85a30; font-weight:bold; margin-bottom:6px; }
+  #traceWrap { position:relative; }
+  canvas#trace { background:#fffef7; border:4px dashed #f0997b; border-radius:20px; touch-action:none; }
+  #btns { display:flex; gap:12px; margin-top:12px; }
+  .btn { border:none; border-radius:18px; padding:12px 22px; font-size:clamp(15px,4.5vw,20px);
+    font-weight:bold; color:#fff; cursor:pointer; font-family:inherit; }
+  .btn.say { background:#1d9e75; }
+  .btn.clear { background:#888780; }
+  .btn.close { background:#d4537e; }
+  #star { position:absolute; font-size:80px; top:40%; left:50%; transform:translate(-50%,-50%) scale(0);
+    pointer-events:none; transition:transform .4s cubic-bezier(.2,1.4,.5,1); z-index:25; }
+  #star.pop { transform:translate(-50%,-50%) scale(1); }
+</style>
+</head>
+<body>
+<div id="game">
+  <div id="title">Taijyu car ー知育ゲームー</div>
+  <div id="hint">くるまを タップしてね！</div>
+  <div id="road"><div id="lane"></div></div>
+  <div id="star">⭐</div>
+</div>
+
+<div id="overlay">
+  <div id="panel">
+    <div id="charLabel">あ</div>
+    <div id="traceWrap">
+      <canvas id="trace" width="300" height="300"></canvas>
+    </div>
+    <div id="btns">
+      <button class="btn say">🔊 おと</button>
+      <button class="btn clear">けす</button>
+      <button class="btn close">とじる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const HIRA = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん".split("");
+const COLORS = ["#e24b4a","#378add","#ef9f27","#1d9e75","#d4537e","#7f77dd","#d85a30","#5f5e5a"];
+
+const game = document.getElementById("game");
+
+/* clouds */
+function makeCloud(x,y,s){
+  const c=document.createElement("div"); c.className="cloud";
+  c.style.left=x+"%"; c.style.top=y+"%"; c.style.width=(60*s)+"px"; c.style.height=(26*s)+"px";
+  game.appendChild(c);
+}
+makeCloud(12,12,1.1); makeCloud(60,8,1.4); makeCloud(80,20,.9); makeCloud(35,18,1);
+
+/* ---- car SVG factory: a Tomica-ish boxy car with an openable door ---- */
+function carSVG(color){
+  return `
+  <svg width="150" height="86" viewBox="0 0 150 86">
+    <!-- body -->
+    <rect x="6" y="34" width="138" height="38" rx="9" fill="${color}"/>
+    <path d="M30 34 L46 12 H104 L122 34 Z" fill="${color}"/>
+    <!-- windows -->
+    <path d="M50 30 L60 16 H86 L86 30 Z" fill="#cfeaff"/>
+    <path d="M92 30 L92 16 H100 L112 30 Z" fill="#cfeaff"/>
+    <!-- door (opens) -->
+    <g class="door" style="transform-origin:90px 52px; transition:transform .45s ease;">
+      <rect class="doorpanel" x="74" y="36" width="34" height="32" rx="4" fill="${shade(color,-18)}" stroke="${shade(color,-32)}" stroke-width="2"/>
+      <circle cx="102" cy="52" r="2.4" fill="#fff"/>
+    </g>
+    <!-- wheels -->
+    <circle cx="40" cy="72" r="14" fill="#222"/><circle cx="40" cy="72" r="6" fill="#bbb"/>
+    <circle cx="110" cy="72" r="14" fill="#222"/><circle cx="110" cy="72" r="6" fill="#bbb"/>
+    <!-- headlight -->
+    <circle cx="140" cy="44" r="4" fill="#fff3b0"/>
+  </svg>`;
+}
+function shade(hex,p){
+  const n=parseInt(hex.slice(1),16); let r=n>>16,g=(n>>8)&255,b=n&255;
+  r=Math.max(0,Math.min(255,r+p*2.55|0)); g=Math.max(0,Math.min(255,g+p*2.55|0)); b=Math.max(0,Math.min(255,b+p*2.55|0));
+  return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+/* ---- spawn moving cars ---- */
+let charIndex = 0;
+function spawnCar(){
+  const car=document.createElement("div"); car.className="car";
+  const color=COLORS[Math.floor(Math.random()*COLORS.length)];
+  car.innerHTML=carSVG(color);
+  const ch=HIRA[charIndex % HIRA.length]; charIndex++;
+  car.dataset.char=ch;
+  // vertical jitter on the road
+  car.style.bottom=(9+Math.random()*6)+"%";
+  car.style.left="-170px";
+  game.appendChild(car);
+
+  const dur=5500+Math.random()*3500;
+  const startT=performance.now();
+  const screenW=window.innerWidth+200;
+  function step(now){
+    if(car._stopped){ return; }
+    const t=(now-startT)/dur;
+    if(t>=1){ car.remove(); return; }
+    car.style.transform=`translateX(${t*screenW}px)`;
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  car.addEventListener("click",()=>openCar(car,ch));
+}
+setInterval(()=>{ if(document.querySelectorAll(".car").length<4) spawnCar(); },1600);
+spawnCar();
+
+/* ---- open door -> show hiragana, then trace panel ---- */
+const overlay=document.getElementById("overlay");
+const charLabel=document.getElementById("charLabel");
+const star=document.getElementById("star");
+let currentChar="あ";
+
+function openCar(car,ch){
+  car._stopped=true;
+  const door=car.querySelector(".door");
+  if(door) door.style.transform="rotateY(-110deg)";
+  // little floating hiragana out of the door
+  const pop=document.createElement("div");
+  pop.textContent=ch;
+  pop.style.cssText=`position:absolute;font-size:34px;font-weight:bold;color:#fff;
+    text-shadow:0 2px 4px rgba(0,0,0,.4);pointer-events:none;z-index:8;
+    transition:transform .6s ease,opacity .6s ease;`;
+  const r=car.getBoundingClientRect();
+  pop.style.left=(r.left+r.width*0.6)+"px"; pop.style.top=(r.top+10)+"px";
+  document.body.appendChild(pop);
+  requestAnimationFrame(()=>{ pop.style.transform="translateY(-50px)"; });
+  speak(ch);
+  setTimeout(()=>{ pop.style.opacity="0"; },600);
+  setTimeout(()=>{ pop.remove(); openTrace(ch); car.remove(); },700);
+}
+
+/* ---- trace panel ---- */
+const canvas=document.getElementById("trace");
+const ctx=canvas.getContext("2d");
+function fitCanvas(){
+  const size=Math.min(300, window.innerWidth*0.8);
+  canvas.width=size; canvas.height=size;
+}
+function drawGuide(ch){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // faint guide character to trace over
+  ctx.save();
+  ctx.fillStyle="#f3d9cc";
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.font=`bold ${canvas.width*0.7}px "Hiragino Maru Gothic ProN","Yu Gothic",sans-serif`;
+  ctx.fillText(ch, canvas.width/2, canvas.width/2+canvas.width*0.02);
+  // grid
+  ctx.strokeStyle="rgba(216,90,48,.25)"; ctx.lineWidth=1; ctx.setLineDash([6,6]);
+  ctx.beginPath(); ctx.moveTo(canvas.width/2,0); ctx.lineTo(canvas.width/2,canvas.width);
+  ctx.moveTo(0,canvas.width/2); ctx.lineTo(canvas.width,canvas.width/2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+function openTrace(ch){
+  currentChar=ch; charLabel.textContent=ch;
+  fitCanvas(); drawGuide(ch);
+  overlay.classList.add("show");
+}
+
+/* drawing */
+let drawing=false, last=null, drewEnough=0;
+function pos(e){
+  const r=canvas.getBoundingClientRect();
+  const p=e.touches?e.touches[0]:e;
+  return {x:p.clientX-r.left, y:p.clientY-r.top};
+}
+function start(e){ drawing=true; last=pos(e); e.preventDefault(); }
+function move(e){
+  if(!drawing) return;
+  const p=pos(e);
+  ctx.strokeStyle="#1d9e75"; ctx.lineWidth=canvas.width*0.05;
+  ctx.lineCap="round"; ctx.lineJoin="round";
+  ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke();
+  drewEnough+=Math.hypot(p.x-last.x,p.y-last.y);
+  last=p; e.preventDefault();
+}
+function end(){
+  if(!drawing) return;
+  drawing=false;
+  if(drewEnough>canvas.width*1.2){ // traced a meaningful amount -> reward + sound
+    speak(currentChar);
+    star.classList.add("pop");
+    setTimeout(()=>star.classList.remove("pop"),700);
+  }
+  drewEnough=0;
+}
+canvas.addEventListener("mousedown",start); canvas.addEventListener("mousemove",move);
+window.addEventListener("mouseup",end);
+canvas.addEventListener("touchstart",start,{passive:false});
+canvas.addEventListener("touchmove",move,{passive:false});
+canvas.addEventListener("touchend",end);
+
+/* buttons */
+document.querySelector(".btn.say").onclick=()=>speak(currentChar);
+document.querySelector(".btn.clear").onclick=()=>drawGuide(currentChar);
+document.querySelector(".btn.close").onclick=()=>{ overlay.classList.remove("show"); spawnCar(); };
+
+/* ---- speech (Japanese hiragana voice) ---- */
+let jpVoice=null;
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();
+  jpVoice=vs.find(v=>/ja|JP/i.test(v.lang))||null;
+}
+pickVoice();
+if(typeof speechSynthesis!=="undefined") speechSynthesis.onvoiceschanged=pickVoice;
+function speak(ch){
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(ch);
+    u.lang="ja-JP"; u.rate=0.7; u.pitch=1.2;
+    if(jpVoice) u.voice=jpVoice;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+window.addEventListener("resize",()=>{ if(overlay.classList.contains("show")){ fitCanvas(); drawGuide(currentChar);} });
+</script>
+</body>
+</html>

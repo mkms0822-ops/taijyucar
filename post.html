@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>記事投稿｜防災情報センター</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root {
+  --user-font: 'Noto Sans JP', sans-serif;
+  --num-font: 'Orbitron', monospace;
+  --bg: #04080f;
+  --surface: #080f1e;
+  --surface2: #0c1628;
+  --surface3: #101d30;
+  --accent: #ff2d2d;
+  --accent2: #ff8c00;
+  --safe: #00c060;
+  --blue: #00b4ff;
+  --text: #d8eaf8;
+  --muted: #4a6a8a;
+  --border: rgba(0,180,255,0.12);
+  --glow-blue: 0 0 24px rgba(0,180,255,0.25);
+  --header-bg: rgba(4,8,15,0.96);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--user-font); background: var(--bg); color: var(--text); min-height: 100vh; }
+.site-header { position: sticky; top: 0; z-index: 100; background: var(--header-bg); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+.logo-link { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.logo-text { font-family: var(--num-font); font-size: clamp(10px,1.8vw,14px); letter-spacing: 0.1em; color: var(--blue); }
+.back-btn { font-family: var(--num-font); font-size: 11px; letter-spacing: 0.1em; color: var(--muted); text-decoration: none; padding: 7px 16px; border: 1px solid var(--border); border-radius: 8px; transition: all 0.2s; }
+.back-btn:hover { color: var(--blue); border-color: rgba(0,180,255,0.4); }
+.main-wrap { max-width: 720px; margin: 48px auto; padding: 0 20px; }
+.page-title { font-family: var(--num-font); font-size: clamp(14px,2.5vw,20px); letter-spacing: 0.15em; color: var(--blue); margin-bottom: 8px; }
+.page-desc { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px; }
+#login-section { text-align: center; }
+.login-icon { font-size: 48px; margin-bottom: 16px; }
+.login-title { font-family: var(--num-font); font-size: 14px; letter-spacing: 0.12em; color: var(--blue); margin-bottom: 10px; }
+.login-desc { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 28px; }
+#g_id_signin { display: flex; justify-content: center; }
+#user-bar { display: none; align-items: center; gap: 12px; background: var(--surface2); border: 1px solid rgba(0,180,255,0.15); border-radius: 10px; padding: 12px 16px; margin-bottom: 28px; }
+#user-bar.visible { display: flex; }
+#user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(0,180,255,0.3); }
+#user-name { font-size: 13px; font-weight: 700; flex: 1; }
+#user-email { font-size: 11px; color: var(--muted); }
+.logout-btn { font-family: var(--num-font); font-size: 10px; letter-spacing: 0.08em; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: all 0.2s; }
+.logout-btn:hover { color: var(--accent); border-color: rgba(255,45,45,0.3); }
+#unauthorized-section { display: none; text-align: center; }
+#unauthorized-section.visible { display: block; }
+.unauth-icon { font-size: 48px; margin-bottom: 16px; }
+.unauth-title { font-family: var(--num-font); font-size: 14px; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 10px; }
+.unauth-desc { font-size: 13px; color: var(--muted); line-height: 1.8; }
+#post-section { display: none; }
+#post-section.visible { display: block; }
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; }
+.form-label span { color: var(--accent); margin-left: 2px; }
+.form-input, .form-textarea, .form-select { width: 100%; background: var(--surface2); border: 1px solid rgba(0,180,255,0.2); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: var(--user-font); font-size: 13px; outline: none; transition: border-color 0.2s; }
+.form-input:focus, .form-textarea:focus, .form-select:focus { border-color: rgba(0,180,255,0.5); box-shadow: 0 0 0 3px rgba(0,180,255,0.08); }
+.form-textarea { resize: vertical; min-height: 160px; line-height: 1.8; }
+.form-select { appearance: none; cursor: pointer; }
+.form-select option { background: var(--surface2); }
+.char-count { font-size: 11px; color: var(--muted); text-align: right; margin-top: 4px; }
+.submit-btn { width: 100%; background: rgba(0,180,255,0.15); border: 1px solid rgba(0,180,255,0.4); color: var(--blue); font-family: var(--num-font); font-size: 12px; letter-spacing: 0.12em; padding: 14px; border-radius: 10px; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+.submit-btn:hover { background: rgba(0,180,255,0.28); box-shadow: var(--glow-blue); }
+.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+#result-msg { display: none; border-radius: 10px; padding: 14px 18px; font-size: 13px; margin-top: 20px; line-height: 1.7; }
+#result-msg.success { display: block; background: rgba(0,192,96,0.08); border: 1px solid rgba(0,192,96,0.3); color: var(--safe); }
+#result-msg.error { display: block; background: rgba(255,45,45,0.08); border: 1px solid rgba(255,45,45,0.3); color: var(--accent); }
+.note-box { background: var(--surface2); border: 1px solid rgba(255,140,0,0.2); border-radius: 10px; padding: 14px 18px; margin-top: 28px; font-size: 12px; color: var(--muted); line-height: 1.9; }
+.note-box strong { color: var(--accent2); }
+.site-footer { text-align: center; padding: 32px 20px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 60px; }
+
+/* ===== 写真アップロード ===== */
+.photo-drop {
+  display:block; border: 1px dashed rgba(0,180,255,0.4); border-radius: 10px;
+  background: var(--surface2); padding: 18px; text-align: center; cursor: pointer;
+  transition: all 0.2s; color: var(--muted); font-size: 13px;
+}
+.photo-drop:hover { border-color: rgba(0,180,255,0.7); color: var(--blue); background: var(--surface3); }
+.photo-drop .pd-ic { font-size: 26px; display:block; margin-bottom: 6px; }
+.photo-drop input[type=file] { display: none; }
+.photo-previews { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px,1fr)); gap: 10px; margin-top: 14px; }
+.photo-previews:empty { margin-top: 0; }
+.pv { position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1; border: 1px solid var(--border); background: #000; }
+.pv img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pv .rm { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(255,45,45,0.9); color: #fff; font-size: 13px; cursor: pointer; line-height: 22px; padding: 0; }
+.pv .rm:hover { background: var(--accent); }
+.photo-hint { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.7; }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html" class="logo-link">
+    <span style="font-size:22px">🛡️</span>
+    <span class="logo-text">防災情報センター</span>
+  </a>
+  <a href="index.html" class="back-btn">← TOP へ戻る</a>
+</header>
+
+<main class="main-wrap">
+  <h1 class="page-title">📝 ARTICLE POST</h1>
+  <p class="page-desc">承認済みのGoogleアカウントでログインして記事を投稿できます。<br>投稿内容は管理者が確認後、サイトに公開されます。</p>
+
+  <div class="card" id="login-section">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">GOOGLE LOGIN</div>
+    <p class="login-desc">投稿にはGoogleアカウントでのログインが必要です。<br>承認済みのアカウントのみ投稿フォームが表示されます。</p>
+    <div id="g_id_signin"></div>
+  </div>
+
+  <div id="logged-in-card" style="display:none;">
+    <div id="user-bar">
+      <img id="user-avatar" src="" alt="">
+      <div>
+        <div id="user-name"></div>
+        <div id="user-email"></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
+    </div>
+
+    <div class="card" id="unauthorized-section">
+      <div class="unauth-icon">🚫</div>
+      <div class="unauth-title">ACCESS DENIED</div>
+      <p class="unauth-desc">このアカウントは投稿が承認されていません。<br>投稿権限が必要な方は管理者にお問い合わせください。</p>
+    </div>
+
+    <div class="card" id="post-section">
+      <div class="form-group">
+        <label class="form-label">タイトル <span>*</span></label>
+        <input type="text" id="f-title" class="form-input" placeholder="記事のタイトルを入力" maxlength="100">
+        <div class="char-count"><span id="title-count">0</span> / 100</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">本文 <span>*</span></label>
+        <textarea id="f-body" class="form-textarea" placeholder="記事の内容を入力してください"></textarea>
+        <div class="char-count"><span id="body-count">0</span> 文字</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">タグ</label>
+        <select id="f-tag" class="form-select">
+          <option value="情報">情報</option>
+          <option value="地震">地震</option>
+          <option value="台風">台風</option>
+          <option value="大雨">大雨</option>
+          <option value="避難">避難</option>
+          <option value="防災">防災</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+
+      <!-- ★写真アップロード -->
+      <div class="form-group">
+        <label class="form-label">写真（任意・最大8枚）</label>
+        <label class="photo-drop" id="photo-drop">
+          <span class="pd-ic">📷</span>
+          タップして写真を選択（複数選べます）
+          <input type="file" id="f-photos" accept="image/*" multiple>
+        </label>
+        <div class="photo-previews" id="photo-previews"></div>
+        <div class="photo-hint">※ 写真は自動で縮小して送信されます。大きな画像でもそのまま選んで大丈夫です。</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">関連リンク（任意）</label>
+        <input type="url" id="f-link" class="form-input" placeholder="https://...">
+      </div>
+      <button class="submit-btn" id="submit-btn" onclick="submitPost()">📤 &nbsp; 投稿を送信する</button>
+      <div id="result-msg"></div>
+      <div class="note-box">
+        <strong>⚠️ 注意事項</strong><br>
+        ・投稿内容は管理者が確認してから公開されます（即時公開ではありません）<br>
+        ・防災・災害情報に関連した内容をお願いします<br>
+        ・写真は他人の権利を侵害しないもの（自分で撮影したもの等）をご利用ください<br>
+        ・不適切な内容は公開されない場合があります
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">© 2026 防災情報センター / Disaster Warning Account</footer>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycby8yqQ-1sIZrcpKfzi1D7teL7ogBQHQWUKjzEAYjE8qe76y0biy2IHvkULjeEWuzoCHNA/exec';
+var CLIENT_ID = '1071548387829-6u0jti3st718prr3pi3b8uq6d795vv5t.apps.googleusercontent.com';
+var currentUser = null;
+var selectedPhotos = []; // {dataUrl, base64, type} の配列
+
+window.onload = function() {
+  google.accounts.id.initialize({
+    client_id: CLIENT_ID,
+    callback: handleCredentialResponse,
+    auto_select: false
+  });
+  google.accounts.id.renderButton(
+    document.getElementById('g_id_signin'),
+    { theme: 'filled_black', size: 'large', locale: 'ja', width: 280 }
+  );
+  document.getElementById('f-title').addEventListener('input', function() {
+    document.getElementById('title-count').textContent = this.value.length;
+  });
+  document.getElementById('f-body').addEventListener('input', function() {
+    document.getElementById('body-count').textContent = this.value.length;
+  });
+  document.getElementById('f-photos').addEventListener('change', handlePhotoSelect);
+};
+
+function handleCredentialResponse(response) {
+  var payload = parseJwt(response.credential);
+  currentUser = { email: payload.email, name: payload.name, picture: payload.picture };
+  showLoggedIn();
+  checkAuthorization(payload.email);
+}
+
+function showLoggedIn() {
+  document.getElementById('login-section').style.display = 'none';
+  document.getElementById('logged-in-card').style.display = 'block';
+  document.getElementById('user-bar').classList.add('visible');
+  document.getElementById('user-avatar').src = currentUser.picture || '';
+  document.getElementById('user-name').textContent = currentUser.name || '';
+  document.getElementById('user-email').textContent = currentUser.email || '';
+}
+
+function checkAuthorization(email) {
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ type: 'auth_check', email: email })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if (data && data.ok) {
+      document.getElementById('post-section').classList.add('visible');
+    } else {
+      document.getElementById('unauthorized-section').classList.add('visible');
+    }
+  })
+  .catch(function(){
+    // 通信に失敗した場合は、とりあえずフォームを表示（送信時に再度チェックされる）
+    document.getElementById('post-section').classList.add('visible');
+  });
+}
+
+/* ===== 写真処理：選択 → 縮小 → プレビュー ===== */
+function handlePhotoSelect(ev) {
+  var files = Array.prototype.slice.call(ev.target.files || []);
+  ev.target.value = ''; // 同じファイルを選び直せるようにリセット
+  files.forEach(function(file) {
+    if (selectedPhotos.length >= 8) { return; }
+    if (!/^image\//.test(file.type)) return;
+    compressImage(file, function(result) {
+      if (!result) return;
+      selectedPhotos.push(result);
+      renderPreviews();
+    });
+  });
+}
+
+// 画像を最大辺1280pxに縮小し、JPEG(品質0.8)のbase64に変換
+function compressImage(file, cb) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var MAX = 1280;
+      var w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w >= h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      cb({
+        dataUrl: dataUrl,
+        base64: dataUrl.split(',')[1],
+        type: 'image/jpeg'
+      });
+    };
+    img.onerror = function(){ cb(null); };
+    img.src = e.target.result;
+  };
+  reader.onerror = function(){ cb(null); };
+  reader.readAsDataURL(file);
+}
+
+function renderPreviews() {
+  var box = document.getElementById('photo-previews');
+  box.innerHTML = '';
+  selectedPhotos.forEach(function(p, idx) {
+    var div = document.createElement('div');
+    div.className = 'pv';
+    div.innerHTML = '<img src="' + p.dataUrl + '" alt="">' +
+                    '<button class="rm" onclick="removePhoto(' + idx + ')" title="削除">✕</button>';
+    box.appendChild(div);
+  });
+}
+function removePhoto(idx) {
+  selectedPhotos.splice(idx, 1);
+  renderPreviews();
+}
+
+/* ===== 投稿送信 ===== */
+function submitPost() {
+  var title = document.getElementById('f-title').value.trim();
+  var body  = document.getElementById('f-body').value.trim();
+  var tag   = document.getElementById('f-tag').value;
+  var link  = document.getElementById('f-link').value.trim();
+
+  if (!title) { showResult('error', '⚠️ タイトルを入力してください。'); return; }
+  if (!body)  { showResult('error', '⚠️ 本文を入力してください。'); return; }
+
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = selectedPhotos.length ? '写真を送信中...' : '送信中...';
+
+  // 写真がある場合は POST(fetch)、無い場合は従来のJSONP(GET)
+  if (selectedPhotos.length > 0) {
+    submitWithPhotos(title, body, tag, link, btn);
+  } else {
+    submitTextOnly(title, body, tag, link, btn);
+  }
+}
+
+// 写真あり：fetchでPOST
+function submitWithPhotos(title, body, tag, link, btn) {
+  var payload = {
+    type: 'article_post_img',
+    email: currentUser.email,
+    title: title, body: body, tag: tag, link: link || '',
+    images: selectedPhotos.map(function(p){ return { type: p.type, data: p.base64 }; })
+  };
+  // text/plain にすると CORS プリフライトを避けられる（GAS定番の手法）
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    btn.disabled = false;
+    btn.textContent = '📤 \u00a0 投稿を送信する';
+    if (data.ok) {
+      var n = data.count || 0;
+      showResult('success', '✅ 投稿を受け付けました！（写真' + n + '枚）管理者が確認後、サイトに公開されます。');
+      resetForm();
+    } else if (data.error === 'unauthorized') {
+      showResult('error', '🚫 このアカウントは投稿が承認されていません。');
+    } else {
+      showResult('error', '⚠️ 送信に失敗しました。写真の枚数を減らして再試行してください。');
+    }
+  })
+  .catch(function(){
+    btn.disabled = false;
+    btn.textContent = '📤 \u00a0 投稿を送信する';
+    showResult('error', '⚠️ 通信エラーが発生しました。写真の枚数を減らしてお試しください。');
+  });
+}
+
+// 写真なし：fetchでPOST（写真ありと同じ方式に統一）
+function submitTextOnly(title, body, tag, link, btn) {
+  var payload = {
+    type: 'article_post',
+    email: currentUser.email,
+    title: title, body: body, tag: tag, link: link || ''
+  };
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    btn.disabled = false;
+    btn.textContent = '📤 \u00a0 投稿を送信する';
+    if (data.ok) {
+      showResult('success', '✅ 投稿を受け付けました！管理者が確認後、サイトに公開されます。');
+      resetForm();
+    } else if (data.error === 'unauthorized') {
+      showResult('error', '🚫 このアカウントは投稿が承認されていません。');
+    } else {
+      showResult('error', '⚠️ 送信に失敗しました。しばらく経ってから再試行してください。');
+    }
+  })
+  .catch(function(){
+    btn.disabled = false;
+    btn.textContent = '📤 \u00a0 投稿を送信する';
+    showResult('error', '⚠️ 通信エラーが発生しました。');
+  });
+}
+
+function resetForm() {
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-body').value = '';
+  document.getElementById('f-link').value = '';
+  document.getElementById('title-count').textContent = '0';
+  document.getElementById('body-count').textContent = '0';
+  selectedPhotos = [];
+  renderPreviews();
+}
+
+function handleLogout() {
+  google.accounts.id.disableAutoSelect();
+  currentUser = null;
+  document.getElementById('login-section').style.display = 'block';
+  document.getElementById('logged-in-card').style.display = 'none';
+  document.getElementById('user-bar').classList.remove('visible');
+  document.getElementById('post-section').classList.remove('visible');
+  document.getElementById('unauthorized-section').classList.remove('visible');
+  document.getElementById('result-msg').style.display = 'none';
+  selectedPhotos = [];
+  renderPreviews();
+}
+
+function showResult(type, msg) {
+  var el = document.getElementById('result-msg');
+  el.className = type;
+  el.textContent = msg;
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function parseJwt(token) {
+  var base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join('')));
+}
+</script>
+</body>
+</html>

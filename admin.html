@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理者ページ｜防災情報センター</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#04080f; --surface:#080f1e; --surface2:#0c1628; --surface3:#101d30;
+  --accent:#ff2d2d; --accent2:#ff8c00; --safe:#00e87a;
+  --blue:#00b4ff; --cyan:#00ffe0; --yellow:#ffe600;
+  --text:#d8eaf8; --muted:#4a6a8a; --border:rgba(0,180,255,0.12);
+  --glow-blue:0 0 24px rgba(0,180,255,0.25);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);pointer-events:none;z-index:999;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,180,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,180,255,0.03) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+
+/* ===== LOGIN SCREEN ===== */
+#loginScreen{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;align-items:center;justify-content:center;}
+.login-box{background:var(--surface2);border:1px solid rgba(0,180,255,0.25);border-radius:20px;padding:48px 40px;width:100%;max-width:400px;text-align:center;position:relative;z-index:1;}
+.login-logo{font-family:'Orbitron',monospace;font-size:13px;letter-spacing:0.2em;color:var(--blue);margin-bottom:6px;}
+.login-title{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--text);margin-bottom:6px;}
+.login-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.1em;margin-bottom:32px;}
+.login-label{display:block;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-align:left;margin-bottom:6px;}
+.login-input{width:100%;background:var(--surface);border:1px solid rgba(0,180,255,0.2);border-radius:8px;padding:12px 16px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:15px;letter-spacing:0.15em;outline:none;transition:border-color 0.2s;margin-bottom:16px;}
+.login-input:focus{border-color:rgba(0,180,255,0.5);}
+.login-btn{width:100%;padding:14px;background:rgba(0,180,255,0.15);border:1px solid rgba(0,180,255,0.4);border-radius:10px;color:var(--blue);font-family:'Orbitron',monospace;font-size:12px;letter-spacing:0.15em;cursor:pointer;transition:all 0.2s;margin-top:4px;}
+.login-btn:hover{background:rgba(0,180,255,0.28);}
+.login-err{color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:12px;margin-top:12px;display:none;min-height:18px;}
+.login-lock{font-size:48px;margin-bottom:20px;}
+.login-attempts{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:14px;}
+
+/* ===== HEADER ===== */
+header{position:sticky;top:0;z-index:200;background:rgba(4,8,15,0.96);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,140,0,0.2);padding:0 28px;height:68px;display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-mark{position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;}
+.logo-ring{position:absolute;width:44px;height:44px;border:2px solid var(--accent2);border-radius:50%;animation:spin 8s linear infinite;}
+.logo-ring2{position:absolute;width:34px;height:34px;border:1px solid rgba(255,140,0,0.3);border-radius:50%;animation:spin 4s linear infinite reverse;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.logo-dot{width:12px;height:12px;background:var(--accent2);border-radius:50%;box-shadow:0 0 12px var(--accent2);position:relative;z-index:1;}
+.logo-text{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;letter-spacing:0.06em;color:var(--accent2);text-shadow:0 0 20px rgba(255,140,0,0.5);}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.18em;display:block;margin-top:2px;}
+.admin-badge{display:flex;align-items:center;gap:10px;}
+.badge-admin{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:0.1em;color:var(--accent2);background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);border-radius:4px;padding:5px 14px;}
+.btn-logout{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:0.1em;color:var(--muted);background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:6px 14px;cursor:pointer;transition:all 0.2s;}
+.btn-logout:hover{color:var(--text);background:rgba(255,255,255,0.08);}
+.btn-back{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:0.1em;color:var(--blue);background:rgba(0,180,255,0.08);border:1px solid rgba(0,180,255,0.25);border-radius:6px;padding:6px 14px;cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-back:hover{background:rgba(0,180,255,0.18);}
+
+/* ===== MAIN ===== */
+#adminContent{display:none;position:relative;z-index:1;}
+.admin-wrap{max-width:1100px;margin:0 auto;padding:32px 24px;}
+.page-title{font-family:'Orbitron',monospace;font-size:14px;letter-spacing:0.2em;color:var(--accent2);margin-bottom:4px;}
+.page-desc{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:32px;}
+
+/* ===== TABS ===== */
+.tabs{display:flex;gap:10px;margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.tab{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:0.1em;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;padding:10px 20px;cursor:pointer;transition:all 0.2s;margin-bottom:-1px;}
+.tab.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+.tab:hover:not(.active){color:var(--text);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fadeInUp 0.3s ease;}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ===== SECTION HEAD ===== */
+.section-head{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:0.2em;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.section-head::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ===== EDITOR CARDS ===== */
+.editor-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;}
+.card-num{font-family:'Orbitron',monospace;font-size:10px;color:var(--muted);margin-bottom:14px;letter-spacing:0.1em;}
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.12em;color:var(--muted);margin-bottom:6px;text-transform:uppercase;}
+.form-input,.form-textarea,.form-select{width:100%;background:var(--surface2);border:1px solid rgba(0,180,255,0.2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;transition:border-color 0.2s;outline:none;}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:rgba(0,180,255,0.5);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-select{appearance:none;cursor:pointer;}
+.form-select option{background:var(--surface2);}
+.icon-picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+.icon-opt{width:38px;height:38px;background:var(--surface2);border:1px solid rgba(0,180,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all 0.15s;}
+.icon-opt:hover{background:rgba(0,180,255,0.1);}
+.icon-opt.selected{border-color:var(--blue);background:rgba(0,180,255,0.15);box-shadow:0 0 8px rgba(0,180,255,0.3);}
+
+/* ===== SAVE BAR ===== */
+.save-bar{position:sticky;bottom:0;background:rgba(4,8,15,0.95);backdrop-filter:blur(12px);border-top:1px solid rgba(255,140,0,0.2);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;z-index:100;}
+.save-status{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);}
+.save-status.ok{color:var(--safe);}
+.save-status.err{color:var(--accent);}
+.save-actions{display:flex;gap:10px;}
+.btn-save{background:rgba(255,140,0,0.15);border:1px solid rgba(255,140,0,0.4);color:var(--accent2);font-family:'Orbitron',monospace;font-size:11px;letter-spacing:0.1em;padding:10px 24px;border-radius:8px;cursor:pointer;transition:all 0.2s;}
+.btn-save:hover{background:rgba(255,140,0,0.28);}
+.btn-reset{background:rgba(255,45,45,0.08);border:1px solid rgba(255,45,45,0.2);color:var(--accent);font-family:'Orbitron',monospace;font-size:11px;letter-spacing:0.1em;padding:10px 18px;border-radius:8px;cursor:pointer;transition:all 0.2s;}
+.btn-reset:hover{background:rgba(255,45,45,0.18);}
+
+/* ===== PASSWORD SETTINGS ===== */
+.setting-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px;}
+.setting-title{font-family:'Orbitron',monospace;font-size:12px;letter-spacing:0.15em;color:var(--blue);margin-bottom:18px;}
+.setting-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.btn-primary{background:rgba(0,180,255,0.15);border:1px solid rgba(0,180,255,0.4);color:var(--blue);font-family:'Orbitron',monospace;font-size:11px;letter-spacing:0.1em;padding:10px 22px;border-radius:8px;cursor:pointer;transition:all 0.2s;}
+.btn-primary:hover{background:rgba(0,180,255,0.28);}
+.info-box{background:rgba(255,140,0,0.06);border:1px solid rgba(255,140,0,0.15);border-radius:8px;padding:14px 18px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);line-height:1.8;}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-lock">🔐</div>
+    <div class="login-logo">BOUSAI INFORMATION CENTER</div>
+    <div class="login-title">ADMIN LOGIN</div>
+    <div class="login-sub">管理者専用ページ · 認証が必要です</div>
+    <label class="login-label">パスワード</label>
+    <input class="login-input" type="password" id="pwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">🔓 ログイン</button>
+    <div class="login-err" id="loginErr">パスワードが正しくありません</div>
+    <div class="login-attempts" id="loginAttempts"></div>
+  </div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<div id="adminContent">
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <div class="logo-ring"></div>
+      <div class="logo-ring2"></div>
+      <div class="logo-dot"></div>
+    </div>
+    <div>
+      <div class="logo-text">管理者ページ</div>
+      <span class="logo-sub">BOUSAI INFORMATION CENTER · ADMIN PANEL</span>
+    </div>
+  </div>
+  <div class="admin-badge">
+    <a class="btn-back" href="index.html">← サイトに戻る</a>
+    <span class="badge-admin">🔒 ADMIN</span>
+    <button class="btn-logout" onclick="doLogout()">ログアウト</button>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<div class="admin-wrap">
+  <div class="page-title">// ADMIN PANEL</div>
+  <div class="page-desc">防災情報センター 管理者専用 · コンテンツ編集ツール</div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('blog')">📰 防災コラム</button>
+    <button class="tab" onclick="switchTab('post')">📋 最新記事</button>
+    <button class="tab" onclick="switchTab('settings')">⚙️ 設定</button>
+  </div>
+
+  <!-- ===== BLOG PANEL ===== -->
+  <div class="tab-panel active" id="tab-blog">
+    <div class="section-head">// 防災コラム編集（メインページに表示されるカード）</div>
+    <div id="blogEditorCards"></div>
+  </div>
+
+  <!-- ===== POST PANEL ===== -->
+  <div class="tab-panel" id="tab-post">
+    <div class="section-head">// 最新記事編集（サイドバーに表示される記事リスト）</div>
+    <div id="postEditorItems"></div>
+  </div>
+
+  <!-- ===== SETTINGS PANEL ===== -->
+  <div class="tab-panel" id="tab-settings">
+    <div class="section-head">// 管理者設定</div>
+    <div class="setting-box">
+      <div class="setting-title">// パスワード変更</div>
+      <div class="setting-row">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">現在のパスワード</label>
+          <input class="form-input" type="password" id="curPw" placeholder="現在のパスワード">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">新しいパスワード</label>
+          <input class="form-input" type="password" id="newPw" placeholder="6文字以上">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">新しいパスワード（確認）</label>
+        <input class="form-input" type="password" id="newPw2" placeholder="もう一度入力">
+      </div>
+      <button class="btn-primary" onclick="changePassword()">パスワードを変更</button>
+      <div id="pwChangeMsg" style="margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:12px;"></div>
+    </div>
+    <div class="setting-box">
+      <div class="setting-title">// データ管理</div>
+      <div class="info-box" style="margin-bottom:16px;">
+        コンテンツデータはブラウザのlocalStorageに保存されています。<br>
+        「リセット」するとデフォルトデータに戻ります。この操作は元に戻せません。
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="exportData()">📥 データをエクスポート</button>
+        <button class="btn-reset" onclick="resetAllData()">🗑️ 全データをリセット</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SAVE BAR ===== -->
+<div class="save-bar">
+  <div class="save-status" id="saveStatus">// 未保存の変更があります</div>
+  <div class="save-actions">
+    <button class="btn-reset" onclick="discardChanges()">元に戻す</button>
+    <button class="btn-save" onclick="saveAll()">💾 変更を保存</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ===================== AUTH =====================
+const DEFAULT_PASSWORD = 'bousai2026';
+let attempts = 0;
+const MAX_ATTEMPTS = 5;
+
+function getPassword() {
+  return localStorage.getItem('adminPassword') || DEFAULT_PASSWORD;
+}
+
+function isLoggedIn() {
+  return sessionStorage.getItem('adminLoggedIn') === 'true';
+}
+
+function doLogin() {
+  const pw = document.getElementById('pwInput').value;
+  const err = document.getElementById('loginErr');
+  const att = document.getElementById('loginAttempts');
+
+  if (attempts >= MAX_ATTEMPTS) {
+    err.textContent = 'ロックされています。ページを再読み込みしてください。';
+    err.style.display = 'block';
+    return;
+  }
+
+  if (pw === getPassword()) {
+    sessionStorage.setItem('adminLoggedIn', 'true');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminContent').style.display = 'block';
+    initAdmin();
+  } else {
+    attempts++;
+    err.style.display = 'block';
+    if (attempts >= MAX_ATTEMPTS) {
+      err.textContent = '試行回数を超えました。ページを再読み込みしてください。';
+      document.getElementById('pwInput').disabled = true;
+    } else {
+      err.textContent = `パスワードが正しくありません（残り${MAX_ATTEMPTS - attempts}回）`;
+      att.textContent = `試行: ${attempts}/${MAX_ATTEMPTS}`;
+    }
+    document.getElementById('pwInput').value = '';
+  }
+}
+
+function doLogout() {
+  if (!confirm('ログアウトしますか？')) return;
+  sessionStorage.removeItem('adminLoggedIn');
+  location.reload();
+}
+
+function changePassword() {
+  const cur = document.getElementById('curPw').value;
+  const nw = document.getElementById('newPw').value;
+  const nw2 = document.getElementById('newPw2').value;
+  const msg = document.getElementById('pwChangeMsg');
+
+  if (cur !== getPassword()) {
+    msg.style.color = 'var(--accent)';
+    msg.textContent = '現在のパスワードが正しくありません';
+    return;
+  }
+  if (nw.length < 6) {
+    msg.style.color = 'var(--accent)';
+    msg.textContent = 'パスワードは6文字以上にしてください';
+    return;
+  }
+  if (nw !== nw2) {
+    msg.style.color = 'var(--accent)';
+    msg.textContent = '新しいパスワードが一致しません';
+    return;
+  }
+  localStorage.setItem('adminPassword', nw);
+  msg.style.color = 'var(--safe)';
+  msg.textContent = '✓ パスワードを変更しました';
+  document.getElementById('curPw').value = '';
+  document.getElementById('newPw').value = '';
+  document.getElementById('newPw2').value = '';
+}
+
+// ===================== INIT =====================
+if (isLoggedIn()) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminContent').style.display = 'block';
+  initAdmin();
+}
+
+// ===================== DATA =====================
+const ICONS = ['🎒','🏠','💧','📱','🔦','🚿','🍱','🧯','📻','🏥','⛺','🌊','🔋','🛡️','🗺️','👨‍👩‍👧','🐶','📋'];
+const TAG_OPTIONS = [{val:'prep',label:'備え'},{val:'info',label:'情報'},{val:'tips',label:'ヒント'}];
+
+const defaultBlogCards = [
+  {icon:'🎒',tag:'prep',title:'非常用持ち出し袋に入れるべき10のアイテム',subtitle:'',body:'地震・水害など、いざという時に必要なものをリストアップ。定期的な見直し方法も解説します。',link:'',updated:'2026.05.18'},
+  {icon:'🏠',tag:'prep',title:'自宅の耐震化チェックリスト【2026年版】',subtitle:'',body:'築年数別の耐震基準と、自分でできる簡単な補強ポイントをわかりやすく紹介します。',link:'',updated:'2026.05.14'},
+  {icon:'💧',tag:'prep',title:'水の備蓄はどのくらい必要か？正しい保管方法',subtitle:'',body:'一人あたりの必要量、ペットボトルの保管場所、ローリングストック法を詳しく解説。',link:'',updated:'2026.05.10'},
+  {icon:'📱',tag:'info',title:'災害時に使える無料アプリ5選【Android/iOS】',subtitle:'',body:'緊急速報、避難経路検索、オフラインマップなど、スマホに入れておくべき防災アプリを紹介。',link:'',updated:'2026.05.07'},
+];
+const defaultPosts = [
+  {icon:'🔋',tag:'prep',title:'停電時に備えるモバイルバッテリーの選び方',subtitle:'',link:'',updated:'2026.05.20'},
+  {icon:'📋',tag:'info',title:'令和6年能登半島地震から1年：復興の現状と教訓',subtitle:'',link:'',updated:'2026.05.16'},
+  {icon:'👨‍👩‍👧',tag:'tips',title:'子どもと一緒にできる防災訓練3つのアイデア',subtitle:'',link:'',updated:'2026.05.12'},
+  {icon:'🐶',tag:'prep',title:'ペットと一緒に避難するときの注意点まとめ',subtitle:'',link:'',updated:'2026.05.08'},
+];
+
+let editBlog = [];
+let editPost = [];
+
+function initAdmin() {
+  const stored = localStorage.getItem('blogCards');
+  const storedP = localStorage.getItem('postItems');
+  editBlog = JSON.parse(stored || 'null') || JSON.parse(JSON.stringify(defaultBlogCards));
+  editPost = JSON.parse(storedP || 'null') || JSON.parse(JSON.stringify(defaultPosts));
+  renderBlogEditor();
+  renderPostEditor();
+  updateSaveStatus('// 編集内容を変更するとここに表示されます');
+}
+
+// ===================== TABS =====================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['blog','post','settings'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+// ===================== HELPER =====================
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function nowStr() { return new Date().toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+
+// ===================== BLOG EDITOR =====================
+function renderBlogEditor() {
+  const c = document.getElementById('blogEditorCards');
+  c.innerHTML = editBlog.map((card,i) => `
+    <div class="editor-card">
+      <div class="card-num">// カード ${i+1} — ${card.title||'（タイトル未入力）'}</div>
+      <div class="form-group">
+        <label class="form-label">アイコン</label>
+        <div class="icon-picker" id="bIcon_${i}">
+          ${ICONS.map(ic=>`<div class="icon-opt${card.icon===ic?' selected':''}" onclick="setBlogIcon(${i},'${ic}')">${ic}</div>`).join('')}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-group">
+          <label class="form-label">タグ</label>
+          <select class="form-select" onchange="editBlog[${i}].tag=this.value;markDirty()">
+            ${TAG_OPTIONS.map(t=>`<option value="${t.val}"${card.tag===t.val?' selected':''}>${t.label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">更新日</label>
+          <input class="form-input" value="${esc(card.updated)}" oninput="editBlog[${i}].updated=this.value;markDirty()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input class="form-input" value="${esc(card.title)}" oninput="editBlog[${i}].title=this.value;markDirty()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">サブタイトル（任意）</label>
+        <input class="form-input" value="${esc(card.subtitle)}" oninput="editBlog[${i}].subtitle=this.value;markDirty()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">記事本文</label>
+        <textarea class="form-textarea" oninput="editBlog[${i}].body=this.value;markDirty()">${esc(card.body)}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">リンクURL（任意）</label>
+        <input class="form-input" type="url" value="${esc(card.link)}" placeholder="https://..." oninput="editBlog[${i}].link=this.value;markDirty()">
+      </div>
+    </div>
+  `).join('');
+}
+
+function setBlogIcon(i, ic) {
+  editBlog[i].icon = ic;
+  document.querySelectorAll(`#bIcon_${i} .icon-opt`).forEach(el => el.classList.toggle('selected', el.textContent===ic));
+  markDirty();
+}
+
+// ===================== POST EDITOR =====================
+function renderPostEditor() {
+  const c = document.getElementById('postEditorItems');
+  c.innerHTML = editPost.map((p,i) => `
+    <div class="editor-card">
+      <div class="card-num">// 記事 ${i+1} — ${p.title||'（タイトル未入力）'}</div>
+      <div class="form-group">
+        <label class="form-label">アイコン</label>
+        <div class="icon-picker" id="pIcon_${i}">
+          ${ICONS.map(ic=>`<div class="icon-opt${p.icon===ic?' selected':''}" onclick="setPostIcon(${i},'${ic}')">${ic}</div>`).join('')}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-group">
+          <label class="form-label">タグ</label>
+          <select class="form-select" onchange="editPost[${i}].tag=this.value;markDirty()">
+            ${TAG_OPTIONS.map(t=>`<option value="${t.val}"${p.tag===t.val?' selected':''}>${t.label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">更新日</label>
+          <input class="form-input" value="${esc(p.updated)}" oninput="editPost[${i}].updated=this.value;markDirty()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input class="form-input" value="${esc(p.title)}" oninput="editPost[${i}].title=this.value;markDirty()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">サブタイトル（任意）</label>
+        <input class="form-input" value="${esc(p.subtitle)}" oninput="editPost[${i}].subtitle=this.value;markDirty()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">リンクURL（任意）</label>
+        <input class="form-input" type="url" value="${esc(p.link)}" placeholder="https://..." oninput="editPost[${i}].link=this.value;markDirty()">
+      </div>
+    </div>
+  `).join('');
+}
+
+function setPostIcon(i, ic) {
+  editPost[i].icon = ic;
+  document.querySelectorAll(`#pIcon_${i} .icon-opt`).forEach(el => el.classList.toggle('selected', el.textContent===ic));
+  markDirty();
+}
+
+// ===================== SAVE / DISCARD =====================
+let isDirty = false;
+function markDirty() {
+  isDirty = true;
+  updateSaveStatus('// 未保存の変更があります', false);
+}
+function updateSaveStatus(msg, ok=true) {
+  const el = document.getElementById('saveStatus');
+  el.textContent = msg;
+  el.className = 'save-status' + (ok ? ' ok' : '');
+}
+
+function saveAll() {
+  localStorage.setItem('blogCards', JSON.stringify(editBlog));
+  localStorage.setItem('postItems', JSON.stringify(editPost));
+  isDirty = false;
+  updateSaveStatus('✓ 保存しました — ' + nowStr(), true);
+  renderBlogEditor();
+  renderPostEditor();
+}
+
+function discardChanges() {
+  if (!confirm('変更を元に戻しますか？（保存済みのデータに戻ります）')) return;
+  initAdmin();
+  isDirty = false;
+  updateSaveStatus('// 変更を破棄しました');
+}
+
+function resetAllData() {
+  if (!confirm('全データをデフォルトに戻しますか？この操作は元に戻せません。')) return;
+  localStorage.removeItem('blogCards');
+  localStorage.removeItem('postItems');
+  initAdmin();
+  updateSaveStatus('// デフォルトデータに戻しました');
+}
+
+function exportData() {
+  const data = {
+    blogCards: editBlog,
+    postItems: editPost,
+    exportedAt: nowStr()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bousai-data-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+// ページを離れる前に確認
+window.addEventListener('beforeunload', e => {
+  if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+});
+</script>
+</body>
+</html>

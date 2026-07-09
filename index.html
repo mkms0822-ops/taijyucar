@@ -42,24 +42,28 @@ body{
   background:#e9dcc4 url('assets/bark.png') top center / 100% auto repeat-y;
 }
 img{max-width:100%;height:auto;display:block;}
-/* ===== ヘッダー（森＋看板＋LIVE＋巣箱） ===== */
+/* ===== ヘッダー（森＋看板＋LIVE＋巣箱／上段は画面端に密着） ===== */
 header{
   background:url('assets/forest.png') top center / cover no-repeat;
-  padding:10px 12px 8px;
+  padding:0 0 8px;                 /* 上・左右の余白ゼロ＝端まで密着 */
 }
-.head-inner{max-width:640px;margin:0 auto;}
+.head-inner{max-width:none;margin:0;}
 .head-top{display:flex;align-items:flex-start;gap:8px;}
-.head-top .title{flex:1;min-width:0;padding-top:4px;}
-.head-top .title img{width:100%;max-width:420px;}
-.live-wrap{position:relative;width:clamp(96px,14vw,118px);flex:0 0 auto;margin-top:4px;}
+.head-top .title{flex:0 1 auto;min-width:0;padding-top:0;}
+.head-top .title img{width:clamp(240px,52vw,600px);max-width:none;}   /* 左上角に密着 */
+.live-wrap{
+  position:relative;flex:0 0 auto;
+  width:clamp(96px,15vw,150px);
+  margin-top:6px;margin-left:auto;  /* LIVEを右側グループへ寄せる */
+}
 .live-wrap time{
   position:absolute;left:14%;right:14%;top:50%;bottom:9%;
   display:flex;align-items:center;justify-content:center;
   background:#f3dcae;border-radius:7px;
-  font-weight:900;font-size:clamp(13px,2vw,16px);
+  font-weight:900;font-size:clamp(13px,2vw,17px);
   font-variant-numeric:tabular-nums;color:#221606;
 }
-.house{width:clamp(84px,13vw,108px);flex:0 0 auto;}
+.house{width:clamp(90px,17vw,170px);flex:0 0 auto;}   /* 右上角に密着 */
 
 /* ===== 入口アイコン列 ===== */
 nav.doors{

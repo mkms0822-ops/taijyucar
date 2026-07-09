@@ -3,11 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <!-- ============================================================
-     Colette防災情報センター 玄関ページ（見本⑬準拠・素材画像版）
-     素材は assets/ フォルダに配置（このHTMLと同じ階層に assets/）
-     監視ルーム = app.html（従来サイト本体）への入口
-     ハッシュ/パラメータ付きアクセスは玄関を出さず app.html へ直行
-     玄関を再表示 → https://bousai0111.info/#gate
+     Colette防災情報センター 玄関ページ【完全版 2026-07-09】
+     これまでの全修正を反映済み：
+     ・見本⑬準拠レイアウト（素材画像使用）
+     ・ヘッダー高さ＝元サイト相当のコンパクト版
+     ・タイトル看板=左上密着／巣箱=右上密着＆ティッカーに下端密着
+     ・LIVE時計=板に直接表示（帯なし・焼き込み数字は消去済み素材）
+     ・アイコン4種=左寄せ・巣箱と重ならない逃げ幅
+     ・ティッカー=素材版（赤札＋ミント帯）
+     ・本文背景=⑮の蔦入り樹皮（bark-full.png）
+     ・全画像に ?v=2 を付与（キャッシュ強制更新）
+     【設置】assetsフォルダごと同じ階層に配置。従来サイトは app.html。
+     【玄関を再表示】 https://bousai0111.info/#gate
      ============================================================ -->
 <script>
 (function () {
@@ -31,66 +38,69 @@
   --ink:#2e2317;
   --mint:#cdeadb;
   --sos:#d0402e;
-  --wood:#7a5230;
-  --wood-deep:#4a311e;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{margin:0;padding:0;background:#8a6f4e;}
 body{
-  margin:0;color:var(--ink);
+  margin:0;padding:0;color:var(--ink);
   font-family:'Zen Maru Gothic',"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
   font-weight:500;line-height:2.0;
-  background:#e9dcc4 url('assets/bark.png') top center / 100% auto repeat-y;
+  background:#e9dcc4 url('assets/bark-full.png?v=2') top center / 100% auto repeat-y;
 }
 img{max-width:100%;height:auto;display:block;}
 
-/* ===== ヘッダー（森＋看板＋LIVE＋巣箱／上段は画面端に密着） ===== */
+/* ===== ヘッダー（森＋看板＋LIVE＋巣箱／元サイト相当のコンパクト高） ===== */
 header{
-  background:url('assets/forest.png') top center / cover no-repeat;
-  padding:0 0 4px;
+  background:url('assets/forest.png?v=2') top center / cover no-repeat;
+  padding:0 0 3px;
   position:relative;
+  margin-top:-2px;
+  border-top:2px solid transparent;
 }
 .head-inner{max-width:none;margin:0;}
 .head-top{
   display:flex;align-items:flex-start;gap:8px;
-  padding-right:clamp(130px,24vw,330px);   /* 巣箱の分の逃げ */
+  padding-right:clamp(105px,14vw,180px);   /* 巣箱の分の逃げ */
 }
 .head-top .title{flex:0 1 auto;min-width:0;padding-top:0;}
-.head-top .title img{width:clamp(240px,52vw,600px);max-width:none;}
+.head-top .title img{width:clamp(160px,30vw,330px);max-width:none;margin-top:-6px;}
 .live-wrap{
   position:relative;flex:0 0 auto;
-  width:clamp(96px,15vw,150px);
-  margin-top:6px;margin-left:auto;
+  width:clamp(68px,9vw,96px);
+  margin-top:8px;margin-left:auto;
 }
 .live-wrap time{
   position:absolute;left:14%;right:14%;top:50%;bottom:9%;
   display:flex;align-items:center;justify-content:center;
   background:transparent;
-  font-weight:900;font-size:clamp(13px,2vw,17px);
+  font-weight:900;font-size:clamp(11px,1.5vw,14px);
   font-variant-numeric:tabular-nums;color:#221606;
 }
 .house{
-  position:absolute;top:0;right:0;bottom:-4px;   /* 下端がティッカー上端に密着 */
-  height:calc(100% + 4px);width:auto;z-index:2;
+  position:absolute;top:-10px;right:0;
+  height:calc(100% + 14px);width:auto;z-index:2;
   filter:drop-shadow(-2px 3px 5px rgba(0,0,0,.3));
 }
 
-/* ===== 入口アイコン列（大きく・上余白なし） ===== */
+/* ===== 入口アイコン列（左寄せ・巣箱と重ならない） ===== */
 nav.doors{
-  display:flex;justify-content:center;align-items:flex-end;gap:clamp(6px,3vw,34px);
+  display:flex;justify-content:flex-start;align-items:flex-end;gap:clamp(6px,2vw,22px);
   margin-top:-4px;
+  padding-left:clamp(8px,3vw,40px);
+  padding-right:clamp(105px,14vw,180px);
 }
 nav.doors a{flex:0 1 auto;min-width:0;text-decoration:none;transition:transform .12s ease;}
 nav.doors a:active{transform:scale(.94);}
 nav.doors img{
   margin:0 auto;width:auto;max-width:100%;
-  max-height:clamp(110px,20vw,205px);
+  max-height:clamp(64px,9vw,104px);
   filter:drop-shadow(0 3px 4px rgba(0,0,0,.35));
 }
 
 /* ===== 最新情報ティッカー（素材版） ===== */
 .ticker{
-  display:flex;align-items:stretch;height:46px;
-  background:url('assets/ticker-band.png') repeat-x center / auto 100%;
+  display:flex;align-items:stretch;height:40px;
+  background:url('assets/ticker-band.png?v=2') repeat-x center / auto 100%;
 }
 .ticker .tag{flex:0 0 auto;height:100%;}
 .ticker .tag img{height:100%;width:auto;display:block;}
@@ -104,7 +114,6 @@ nav.doors img{
   .ticker .belt span{animation:none;position:static;transform:none;display:block;padding:10px;white-space:normal;}
 }
 
-
 /* ===== 本文 ===== */
 .wrap{max-width:720px;margin:0 auto;padding:6px 16px 40px;}
 .sign-h{margin:30px auto 14px;width:min(92%,560px);filter:drop-shadow(2px 3px 2px rgba(40,22,8,.35));}
@@ -114,16 +123,6 @@ section p{margin:0 0 1em;text-indent:1em;}
 ul.colette{list-style:disc;padding-left:1.4em;margin:0;}
 ul.colette li{margin:0 0 10px;}
 ul.colette b:first-child{color:var(--sos);font-size:1.15em;}
-.vine{height:16px;margin:20px 0 6px;background:
-  radial-gradient(circle 4px at 8% 55%, #5a8f3f 98%, transparent),
-  radial-gradient(circle 4px at 24% 35%, #7aa851 98%, transparent),
-  radial-gradient(circle 4px at 41% 60%, #5a8f3f 98%, transparent),
-  radial-gradient(circle 4px at 58% 35%, #7aa851 98%, transparent),
-  radial-gradient(circle 4px at 75% 60%, #5a8f3f 98%, transparent),
-  radial-gradient(circle 4px at 92% 45%, #7aa851 98%, transparent),
-  linear-gradient(90deg, transparent 0 1%, #9c8a5f 1% 99%, transparent 99%);
-  background-size:100% 100%,100% 100%,100% 100%,100% 100%,100% 100%,100% 100%,100% 2px;
-  background-repeat:no-repeat;background-position:center;}
 .cat-figure{float:right;width:46%;max-width:250px;margin:0 0 6px 12px;}
 .skip-row{display:flex;align-items:center;justify-content:center;gap:8px;margin:16px 0 0;font-size:12.5px;color:#4c3a22;font-weight:700;}
 .skip-row input{width:18px;height:18px;accent-color:#2f7d32;}
@@ -141,24 +140,24 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
 <header>
  <div class="head-inner">
   <div class="head-top">
-    <div class="title"><img src="assets/title.png" alt="Colette防災情報センター"></div>
+    <div class="title"><img src="assets/title.png?v=2" alt="Colette防災情報センター"></div>
     <div class="live-wrap">
-      <img src="assets/live.png" alt="LIVE">
+      <img src="assets/live.png?v=2" alt="LIVE">
       <time id="clock">--:--:--</time>
     </div>
-    <img class="house" src="assets/house.png" alt="Disaster Risk Reduction Center Colette">
   </div>
+  <img class="house" src="assets/house.png?v=2" alt="Disaster Risk Reduction Center Colette">
   <nav class="doors" aria-label="各コーナーへの入口">
-    <a href="app.html"><img src="assets/room.png" alt="監視ルーム（メイン画面へ入る）"></a>
-    <a href="Manual.html"><img src="assets/manual.png" alt="緊急対応マニュアル"></a>
-    <a href="app.html"><img src="assets/sos.png" alt="SOS発信機"></a>
-    <a href="https://mkms0822-ops.github.io/jishinhigaisouti/"><img src="assets/higai.png" alt="地震被害想定ツール"></a>
+    <a href="app.html"><img src="assets/room.png?v=2" alt="監視ルーム（メイン画面へ入る）"></a>
+    <a href="Manual.html"><img src="assets/manual.png?v=2" alt="緊急対応マニュアル"></a>
+    <a href="app.html"><img src="assets/sos.png?v=2" alt="SOS発信機"></a>
+    <a href="https://mkms0822-ops.github.io/jishinhigaisouti/"><img src="assets/higai.png?v=2" alt="地震被害想定ツール"></a>
   </nav>
  </div>
 </header>
 
 <div class="ticker" id="ticker">
-  <span class="tag"><img src="assets/ticker-tag.png" alt="最新情報"></span>
+  <span class="tag"><img src="assets/ticker-tag.png?v=2" alt="最新情報"></span>
   <span class="belt"><span id="tickerText">Colette防災情報センターへようこそ。地震・気象・熱中症情報をリアルタイムでお届けしています。</span></span>
 </div>
 
@@ -171,7 +170,7 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
   <p class="enter-note">🏡 上の「監視ルーム」をタップするとメイン画面に入れます</p>
 
   <main>
-    <img class="sign-h" src="assets/h-yurai.png" alt="Coletteの名前の由来">
+    <img class="sign-h" src="assets/h-yurai.png?v=2" alt="Coletteの名前の由来">
     <section>
       <p>我が家には猫が1匹います。3歳の女の子です。見た目はロシアンブルー。保護猫としてお迎えしました。実は、この子の名前がコレットちゃんといいます。</p>
       <p>保護主さんが、お洒落な雰囲気とインスピレーションから名付けたといいます。洋酒の名前としても有名ですよね。</p>
@@ -179,9 +178,7 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
       <p>そんな、コレットちゃんの優しさ、落ち着き、慈悲深さに感銘を受け、屋号をColetteにしました。そして、弊社の防災理念としてColetteのそれぞれの文字を使って以下の言葉を選びました。</p>
     </section>
 
-    <div class="vine" role="presentation"></div>
-
-    <section>
+    <section style="margin-top:18px;">
       <ul class="colette">
         <li><b>C</b><b>ollaboration（協力・連携）</b>：地域、行政、専門機関が手を取り合い、一丸となって災害に備える。</li>
         <li><b>O</b><b>bservation（観察・監視）</b>：気象情報や周辺環境の変化を常に観察し、いち早く危機を察知する。</li>
@@ -192,10 +189,10 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
       </ul>
     </section>
 
-    <img class="sign-h" src="assets/h-fukurou.png" alt="ロゴマークのフクロウ">
+    <img class="sign-h" src="assets/h-fukurou.png?v=2" alt="ロゴマークのフクロウ">
     <section>
       <figure class="cat-figure" style="margin-top:0;">
-        <img src="assets/cat.png" alt="コレットちゃん（ロシアンブルーに似た灰色の保護猫）">
+        <img src="assets/cat.png?v=2" alt="コレットちゃん（ロシアンブルーに似た灰色の保護猫）">
       </figure>
       <p>あらゆる動物の中で、唯一賢者として位置づけられているのがフクロウです。</p>
       <p>西洋では、フクロウは古代ギリシャ神話から「知恵の象徴」とされてきました。知恵、工芸、戦略を司る女神アテナ（ローマ神話ではミネルヴァ）の使いがフクロウであったためです。フクロウの大きく見開いた目は、真実を見抜き、暗闇を見通す「知恵の目」と解釈されました。</p>
@@ -208,7 +205,7 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
       <p>今回のロゴマークとしてフクロウを採用した理由のひとつでもある私の思い出です。</p>
     </section>
 
-    <img class="sign-h small" src="assets/h-saigo.png" alt="最後に">
+    <img class="sign-h small" src="assets/h-saigo.png?v=2" alt="最後に">
     <section>
       <p>コレットちゃんや森の賢者フクロウのように、暗闇でもあらゆるものが見通すことができる「監視と真実の目」と防災知識を養うべく、日々努力を惜しまず、精進してまいります。</p>
       <p>リニューアルスタートしたColette防災情報センターをどうぞこれからも宜しくお願いいたします。</p>
@@ -216,7 +213,8 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
   </main>
 
   <footer>
-    <img class="ring" src="assets/ring.png" alt="Colette防災情報センターのフクロウロゴ">
+    <img class="ring" src="assets/ring.png?v=2" alt="Colette防災情報センターのフクロウロゴ">
+    <div>Disaster Risk Reduction Center</div>
     <div class="owner">運営責任者　古谷　浩二</div>
     <p style="margin-top:12px;"><a href="app.html" style="color:#2f7d32;font-weight:900;">🏡 監視ルームに入る</a></p>
   </footer>

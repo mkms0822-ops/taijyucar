@@ -12,7 +12,7 @@
      ・アイコン4種=左寄せ・巣箱と重ならない逃げ幅
      ・ティッカー=素材版（赤札＋ミント帯）
      ・本文背景=⑮の蔦入り樹皮（bark-full.png）
-     ・全画像に ?v=2 を付与（キャッシュ強制更新）
+     ・全画像に ?v=4 を付与（キャッシュ強制更新）
      【設置】assetsフォルダごと同じ階層に配置。従来サイトは app.html。
      【玄関を再表示】 https://bousai0111.info/#gate
      ============================================================ -->
@@ -45,13 +45,13 @@ body{
   margin:0;padding:0;color:var(--ink);
   font-family:'Zen Maru Gothic',"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
   font-weight:500;line-height:2.0;
-  background:#e9dcc4 url('assets/bark-full.png?v=2') top center / 100% auto repeat-y;
+  background:#e9dcc4 url('assets/bark2.png?v=4') top center / 100% auto repeat-y;
 }
 img{max-width:100%;height:auto;display:block;}
 
 /* ===== ヘッダー（森＋看板＋LIVE＋巣箱／元サイト相当のコンパクト高） ===== */
 header{
-  background:url('assets/forest.png?v=2') top center / cover no-repeat;
+  background:url('assets/forest.png?v=4') top center / cover no-repeat;
   padding:0 0 3px;
   position:relative;
   margin-top:-2px;
@@ -70,7 +70,7 @@ header{
   margin-top:8px;margin-left:auto;
 }
 .live-wrap time{
-  position:absolute;left:14%;right:14%;top:50%;bottom:9%;
+  position:absolute;left:14%;right:14%;top:54%;bottom:10%;
   display:flex;align-items:center;justify-content:center;
   background:transparent;
   font-weight:900;font-size:clamp(11px,1.5vw,14px);
@@ -100,7 +100,7 @@ nav.doors img{
 /* ===== 最新情報ティッカー（素材版） ===== */
 .ticker{
   display:flex;align-items:stretch;height:40px;
-  background:url('assets/ticker-band.png?v=2') repeat-x center / auto 100%;
+  background:url('assets/ticker-band.png?v=4') repeat-x center / auto 100%;
 }
 .ticker .tag{flex:0 0 auto;height:100%;}
 .ticker .tag img{height:100%;width:auto;display:block;}
@@ -116,7 +116,8 @@ nav.doors img{
 
 /* ===== 本文 ===== */
 .wrap{max-width:720px;margin:0 auto;padding:6px 16px 40px;}
-.sign-h{margin:30px auto 14px;width:min(92%,560px);filter:drop-shadow(2px 3px 2px rgba(40,22,8,.35));}
+.vine-img{display:block;width:min(100%,900px);margin:30px auto -14px;}
+.sign-h{margin:10px auto 14px;width:min(92%,560px);filter:drop-shadow(2px 3px 2px rgba(40,22,8,.35));}
 .sign-h.small{width:min(60%,300px);}
 section{font-size:14.5px;}
 section p{margin:0 0 1em;text-indent:1em;}
@@ -140,24 +141,24 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
 <header>
  <div class="head-inner">
   <div class="head-top">
-    <div class="title"><img src="assets/title.png?v=2" alt="Colette防災情報センター"></div>
+    <div class="title"><img src="assets/title.png?v=4" alt="Colette防災情報センター"></div>
     <div class="live-wrap">
-      <img src="assets/live.png?v=2" alt="LIVE">
+      <img src="assets/live.png?v=4" alt="LIVE">
       <time id="clock">--:--:--</time>
     </div>
   </div>
-  <img class="house" src="assets/house.png?v=2" alt="Disaster Risk Reduction Center Colette">
+  <img class="house" src="assets/house.png?v=4" alt="Disaster Risk Reduction Center Colette">
   <nav class="doors" aria-label="各コーナーへの入口">
-    <a href="app.html"><img src="assets/room.png?v=2" alt="監視ルーム（メイン画面へ入る）"></a>
-    <a href="Manual.html"><img src="assets/manual.png?v=2" alt="緊急対応マニュアル"></a>
-    <a href="app.html"><img src="assets/sos.png?v=2" alt="SOS発信機"></a>
-    <a href="https://mkms0822-ops.github.io/jishinhigaisouti/"><img src="assets/higai.png?v=2" alt="地震被害想定ツール"></a>
+    <a href="app.html"><img src="assets/room.png?v=4" alt="監視ルーム（メイン画面へ入る）"></a>
+    <a href="Manual.html"><img src="assets/manual.png?v=4" alt="緊急対応マニュアル"></a>
+    <a href="app.html"><img src="assets/sos.png?v=4" alt="SOS発信機"></a>
+    <a href="https://mkms0822-ops.github.io/jishinhigaisouti/"><img src="assets/higai.png?v=4" alt="地震被害想定ツール"></a>
   </nav>
  </div>
 </header>
 
 <div class="ticker" id="ticker">
-  <span class="tag"><img src="assets/ticker-tag.png?v=2" alt="最新情報"></span>
+  <span class="tag"><img src="assets/ticker-tag.png?v=4" alt="最新情報"></span>
   <span class="belt"><span id="tickerText">Colette防災情報センターへようこそ。地震・気象・熱中症情報をリアルタイムでお届けしています。</span></span>
 </div>
 
@@ -170,7 +171,8 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
   <p class="enter-note">🏡 上の「監視ルーム」をタップするとメイン画面に入れます</p>
 
   <main>
-    <img class="sign-h" src="assets/h-yurai.png?v=2" alt="Coletteの名前の由来">
+    <img class="vine-img" src="assets/vine1.png?v=4" alt="" role="presentation">
+    <img class="sign-h" src="assets/h-yurai.png?v=4" alt="Coletteの名前の由来">
     <section>
       <p>我が家には猫が1匹います。3歳の女の子です。見た目はロシアンブルー。保護猫としてお迎えしました。実は、この子の名前がコレットちゃんといいます。</p>
       <p>保護主さんが、お洒落な雰囲気とインスピレーションから名付けたといいます。洋酒の名前としても有名ですよね。</p>
@@ -189,10 +191,11 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
       </ul>
     </section>
 
-    <img class="sign-h" src="assets/h-fukurou.png?v=2" alt="ロゴマークのフクロウ">
+    <img class="vine-img" src="assets/vine2.png?v=4" alt="" role="presentation">
+    <img class="sign-h" src="assets/h-fukurou.png?v=4" alt="ロゴマークのフクロウ">
     <section>
       <figure class="cat-figure" style="margin-top:0;">
-        <img src="assets/cat.png?v=2" alt="コレットちゃん（ロシアンブルーに似た灰色の保護猫）">
+        <img src="assets/cat.png?v=4" alt="コレットちゃん（ロシアンブルーに似た灰色の保護猫）">
       </figure>
       <p>あらゆる動物の中で、唯一賢者として位置づけられているのがフクロウです。</p>
       <p>西洋では、フクロウは古代ギリシャ神話から「知恵の象徴」とされてきました。知恵、工芸、戦略を司る女神アテナ（ローマ神話ではミネルヴァ）の使いがフクロウであったためです。フクロウの大きく見開いた目は、真実を見抜き、暗闇を見通す「知恵の目」と解釈されました。</p>
@@ -205,7 +208,8 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
       <p>今回のロゴマークとしてフクロウを採用した理由のひとつでもある私の思い出です。</p>
     </section>
 
-    <img class="sign-h small" src="assets/h-saigo.png?v=2" alt="最後に">
+    <img class="vine-img" src="assets/vine3.png?v=4" alt="" role="presentation">
+    <img class="sign-h small" src="assets/h-saigo.png?v=4" alt="最後に">
     <section>
       <p>コレットちゃんや森の賢者フクロウのように、暗闇でもあらゆるものが見通すことができる「監視と真実の目」と防災知識を養うべく、日々努力を惜しまず、精進してまいります。</p>
       <p>リニューアルスタートしたColette防災情報センターをどうぞこれからも宜しくお願いいたします。</p>
@@ -213,7 +217,7 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
   </main>
 
   <footer>
-    <img class="ring" src="assets/ring.png?v=2" alt="Colette防災情報センターのフクロウロゴ">
+    <img class="ring" src="assets/ring.png?v=4" alt="Colette防災情報センターのフクロウロゴ">
     <div>Disaster Risk Reduction Center</div>
     <div class="owner">運営責任者　古谷　浩二</div>
     <p style="margin-top:12px;"><a href="app.html" style="color:#2f7d32;font-weight:900;">🏡 監視ルームに入る</a></p>

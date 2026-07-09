@@ -69,21 +69,21 @@ header{
   font-variant-numeric:tabular-nums;color:#221606;
 }
 .house{
-  position:absolute;top:0;right:0;bottom:0;   /* 下端がティッカー上端に密着 */
-  height:100%;width:auto;z-index:2;
+  position:absolute;top:0;right:0;bottom:-4px;   /* 下端がティッカー上端に密着 */
+  height:calc(100% + 4px);width:auto;z-index:2;
   filter:drop-shadow(-2px 3px 5px rgba(0,0,0,.3));
 }
 
 /* ===== 入口アイコン列（大きく・上余白なし） ===== */
 nav.doors{
-  display:flex;justify-content:center;align-items:flex-end;gap:clamp(6px,3vw,30px);
-  margin-top:0;
+  display:flex;justify-content:center;align-items:flex-end;gap:clamp(6px,3vw,34px);
+  margin-top:-4px;
 }
 nav.doors a{flex:0 1 auto;min-width:0;text-decoration:none;transition:transform .12s ease;}
 nav.doors a:active{transform:scale(.94);}
 nav.doors img{
   margin:0 auto;width:auto;max-width:100%;
-  max-height:clamp(96px,17vw,158px);
+  max-height:clamp(110px,20vw,205px);
   filter:drop-shadow(0 3px 4px rgba(0,0,0,.35));
 }
 

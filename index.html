@@ -27,7 +27,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-html{background:#e9dcc4 url('assets/bark-full.png') top center / 100% auto repeat-y;}     
 :root{
   --ink:#2e2317;
   --mint:#cdeadb;
@@ -49,52 +48,48 @@ header{
   background:url('assets/forest.png') top center / cover no-repeat;
   padding:0 0 4px;
   position:relative;
-  margin-top:-2px;
-  border-top:2px solid transparent;   
 }
 .head-inner{max-width:none;margin:0;}
 .head-top{
   display:flex;align-items:flex-start;gap:8px;
-  padding-right:clamp(105px,14vw,180px);   /* 巣箱の分の逃げ */
+  padding-right:clamp(130px,24vw,330px);   /* 巣箱の分の逃げ */
 }
 .head-top .title{flex:0 1 auto;min-width:0;padding-top:0;}
-.head-top .title img{width:clamp(160px,30vw,330px);max-width:none;margin-top:-6px;}
+.head-top .title img{width:clamp(240px,52vw,600px);max-width:none;}
 .live-wrap{
   position:relative;flex:0 0 auto;
-  width:clamp(68px,9vw,96px);
-  margin-top:8px;margin-left:auto;
+  width:clamp(96px,15vw,150px);
+  margin-top:6px;margin-left:auto;
 }
 .live-wrap time{
   position:absolute;left:14%;right:14%;top:50%;bottom:9%;
   display:flex;align-items:center;justify-content:center;
   background:transparent;
-  font-weight:900;font-size:clamp(11px,1.5vw,14px);
+  font-weight:900;font-size:clamp(13px,2vw,17px);
   font-variant-numeric:tabular-nums;color:#221606;
 }
 .house{
-  position:absolute;top:-10px;right:0;
-  height:calc(100% + 14px);width:auto;z-index:2;
+  position:absolute;top:0;right:0;bottom:-4px;   /* 下端がティッカー上端に密着 */
+  height:calc(100% + 4px);width:auto;z-index:2;
   filter:drop-shadow(-2px 3px 5px rgba(0,0,0,.3));
 }
 
-/* ===== 入口アイコン列（元サイトのヘッダー高に合わせた縮小版） ===== */
+/* ===== 入口アイコン列（大きく・上余白なし） ===== */
 nav.doors{
-  display:flex;justify-content:flex-start;align-items:flex-end;gap:clamp(6px,2vw,22px);
+  display:flex;justify-content:center;align-items:flex-end;gap:clamp(6px,3vw,34px);
   margin-top:-4px;
-  padding-left:clamp(8px,3vw,40px);
-  padding-right:clamp(105px,14vw,180px);   /* 巣箱と重ならない逃げ */
 }
 nav.doors a{flex:0 1 auto;min-width:0;text-decoration:none;transition:transform .12s ease;}
 nav.doors a:active{transform:scale(.94);}
 nav.doors img{
   margin:0 auto;width:auto;max-width:100%;
-  max-height:clamp(64px,9vw,104px);
+  max-height:clamp(110px,20vw,205px);
   filter:drop-shadow(0 3px 4px rgba(0,0,0,.35));
 }
 
 /* ===== 最新情報ティッカー（素材版） ===== */
 .ticker{
-  display:flex;align-items:stretch;height:40px;
+  display:flex;align-items:stretch;height:46px;
   background:url('assets/ticker-band.png') repeat-x center / auto 100%;
 }
 .ticker .tag{flex:0 0 auto;height:100%;}
@@ -119,11 +114,16 @@ section p{margin:0 0 1em;text-indent:1em;}
 ul.colette{list-style:disc;padding-left:1.4em;margin:0;}
 ul.colette li{margin:0 0 10px;}
 ul.colette b:first-child{color:var(--sos);font-size:1.15em;}
-.vine{
-  height:36px;margin:10px calc(50% - 50vw) 4px;
-  width:100vw;max-width:none;
-  background:url('assets/vine-bark.png') center / 100% 100% no-repeat;
-}
+.vine{height:16px;margin:20px 0 6px;background:
+  radial-gradient(circle 4px at 8% 55%, #5a8f3f 98%, transparent),
+  radial-gradient(circle 4px at 24% 35%, #7aa851 98%, transparent),
+  radial-gradient(circle 4px at 41% 60%, #5a8f3f 98%, transparent),
+  radial-gradient(circle 4px at 58% 35%, #7aa851 98%, transparent),
+  radial-gradient(circle 4px at 75% 60%, #5a8f3f 98%, transparent),
+  radial-gradient(circle 4px at 92% 45%, #7aa851 98%, transparent),
+  linear-gradient(90deg, transparent 0 1%, #9c8a5f 1% 99%, transparent 99%);
+  background-size:100% 100%,100% 100%,100% 100%,100% 100%,100% 100%,100% 100%,100% 2px;
+  background-repeat:no-repeat;background-position:center;}
 .cat-figure{float:right;width:46%;max-width:250px;margin:0 0 6px 12px;}
 .skip-row{display:flex;align-items:center;justify-content:center;gap:8px;margin:16px 0 0;font-size:12.5px;color:#4c3a22;font-weight:700;}
 .skip-row input{width:18px;height:18px;accent-color:#2f7d32;}
@@ -179,6 +179,7 @@ footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
       <p>そんな、コレットちゃんの優しさ、落ち着き、慈悲深さに感銘を受け、屋号をColetteにしました。そして、弊社の防災理念としてColetteのそれぞれの文字を使って以下の言葉を選びました。</p>
     </section>
 
+    <div class="vine" role="presentation"></div>
 
     <section>
       <ul class="colette">

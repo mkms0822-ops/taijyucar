@@ -55,20 +55,20 @@ header{
 .head-inner{max-width:none;margin:0;}
 .head-top{
   display:flex;align-items:flex-start;gap:8px;
-  padding-right:clamp(130px,24vw,330px);   /* 巣箱の分の逃げ */
+  padding-right:clamp(105px,14vw,180px);   /* 巣箱の分の逃げ */
 }
 .head-top .title{flex:0 1 auto;min-width:0;padding-top:0;}
-.head-top .title img{width:clamp(240px,52vw,600px);max-width:none;margin-top:-8px;}
+.head-top .title img{width:clamp(160px,30vw,330px);max-width:none;margin-top:-6px;}
 .live-wrap{
   position:relative;flex:0 0 auto;
-  width:clamp(96px,15vw,150px);
-  margin-top:6px;margin-left:auto;
+  width:clamp(68px,9vw,96px);
+  margin-top:8px;margin-left:auto;
 }
 .live-wrap time{
   position:absolute;left:14%;right:14%;top:50%;bottom:9%;
   display:flex;align-items:center;justify-content:center;
   background:transparent;
-  font-weight:900;font-size:clamp(13px,2vw,17px);
+  font-weight:900;font-size:clamp(11px,1.5vw,14px);
   font-variant-numeric:tabular-nums;color:#221606;
 }
 .house{
@@ -77,12 +77,19 @@ header{
   filter:drop-shadow(-2px 3px 5px rgba(0,0,0,.3));
 }
 
-/* ===== 入口アイコン列（大きく・上余白なし） ===== */
+/* ===== 入口アイコン列（元サイトのヘッダー高に合わせた縮小版） ===== */
 nav.doors{
-  display:flex;justify-content:flex-start;align-items:flex-end;gap:clamp(6px,3vw,34px);
+  display:flex;justify-content:flex-start;align-items:flex-end;gap:clamp(6px,2vw,22px);
   margin-top:-4px;
-  padding-left:clamp(10px,5vw,80px);
-  padding-right:clamp(150px,27vw,400px);   /* 巣箱と重ならない逃げ */
+  padding-left:clamp(8px,3vw,40px);
+  padding-right:clamp(105px,14vw,180px);   /* 巣箱と重ならない逃げ */
+}
+nav.doors a{flex:0 1 auto;min-width:0;text-decoration:none;transition:transform .12s ease;}
+nav.doors a:active{transform:scale(.94);}
+nav.doors img{
+  margin:0 auto;width:auto;max-width:100%;
+  max-height:clamp(64px,9vw,104px);
+  filter:drop-shadow(0 3px 4px rgba(0,0,0,.35));
 }
 
 /* ===== 最新情報ティッカー（素材版） ===== */

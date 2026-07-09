@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- ============================================================
+     Colette防災情報センター 玄関ページ（見本⑬準拠・素材画像版）
+     素材は assets/ フォルダに配置（このHTMLと同じ階層に assets/）
+     監視ルーム = app.html（従来サイト本体）への入口
+     ハッシュ/パラメータ付きアクセスは玄関を出さず app.html へ直行
+     玄関を再表示 → https://bousai0111.info/#gate
+     ============================================================ -->
+<script>
+(function () {
+  try {
+    var h = location.hash || '';
+    var q = location.search || '';
+    if (h === '#gate') { history.replaceState(null, '', location.pathname); return; }
+    if (h || q) { location.replace('app.html' + q + h); return; }
+    if (localStorage.getItem('dwa_skip_gate') === '1') { location.replace('app.html'); }
+  } catch (e) {}
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colette防災情報センター｜地震・気象・熱中症のリアルタイム防災情報</title>
+<meta name="description" content="Colette防災情報センターは、地震速報・気象警報・熱中症アラートをリアルタイムで見守る防災サイトです。緊急対応マニュアル、SOS発信機、地震被害想定ツールを無料で提供しています。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#2e2317;
+  --mint:#cdeadb;
+  --sos:#d0402e;
+  --wood:#7a5230;
+  --wood-deep:#4a311e;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{
+  margin:0;color:var(--ink);
+  font-family:'Zen Maru Gothic',"Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  font-weight:500;line-height:2.0;
+  background:#e9dcc4 url('assets/bark.png') top center / 100% auto repeat-y;
+}
+img{max-width:100%;height:auto;display:block;}
+
+/* ===== ヘッダー（森＋看板＋LIVE＋巣箱） ===== */
+header{
+  background:url('assets/forest.png') top center / cover no-repeat;
+  padding:10px 8px 6px;
+  position:relative;
+}
+.head-top{display:flex;align-items:flex-start;gap:6px;max-width:760px;margin:0 auto;}
+.head-top .title{flex:1;min-width:0;padding-top:2px;}
+.live-wrap{position:relative;width:126px;flex:0 0 auto;margin-top:2px;}
+.live-wrap time{
+  position:absolute;left:14%;right:14%;top:50%;bottom:9%;
+  display:flex;align-items:center;justify-content:center;
+  background:#f3dcae;border-radius:7px;
+  font-weight:900;font-size:17px;font-variant-numeric:tabular-nums;color:#221606;
+}
+.house{width:118px;flex:0 0 auto;}
+
+/* ===== 入口アイコン列 ===== */
+nav.doors{
+  display:flex;justify-content:space-around;align-items:flex-end;gap:2px;
+  max-width:760px;margin:2px auto 0;padding:0 2px;
+}
+nav.doors a{
+  flex:1;min-width:0;text-decoration:none;
+  transition:transform .12s ease;
+}
+nav.doors a:active{transform:scale(.94);}
+nav.doors img{margin:0 auto;max-height:118px;width:auto;max-width:100%;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35));}
+
+/* ===== 最新情報ティッカー ===== */
+.ticker{
+  display:flex;align-items:stretch;min-height:40px;
+  background:var(--mint);
+  border-top:5px solid #8a6138;border-bottom:5px solid #8a6138;
+}
+.ticker .tag{
+  background:linear-gradient(180deg,#f2837a,#e05a4d);
+  color:#fff;font-weight:900;font-size:13px;
+  display:flex;align-items:center;padding:0 10px;white-space:nowrap;
+  border:2px solid #a33427;border-radius:6px;margin:3px 4px;
+  text-shadow:1px 1px 0 rgba(0,0,0,.25);
+}
+.ticker .tag::before{content:"●";color:#ff2b1a;margin-right:4px;}
+.ticker .belt{position:relative;flex:1;overflow:hidden;}
+.ticker .belt span{
+  position:absolute;white-space:nowrap;top:50%;transform:translateY(-50%);
+  animation:flow 22s linear infinite;font-size:13.5px;font-weight:700;padding-left:100%;
+}
+@keyframes flow{to{transform:translate(-100%,-50%);}}
+@media (prefers-reduced-motion: reduce){
+  .ticker .belt span{animation:none;position:static;transform:none;display:block;padding:8px 10px;white-space:normal;}
+}
+
+/* ===== 本文 ===== */
+.wrap{max-width:720px;margin:0 auto;padding:6px 16px 40px;}
+.sign-h{margin:30px auto 14px;width:min(92%,560px);filter:drop-shadow(2px 3px 2px rgba(40,22,8,.35));}
+.sign-h.small{width:min(60%,300px);}
+section{font-size:14.5px;}
+section p{margin:0 0 1em;text-indent:1em;}
+ul.colette{list-style:disc;padding-left:1.4em;margin:0;}
+ul.colette li{margin:0 0 10px;}
+ul.colette b:first-child{color:var(--sos);font-size:1.15em;}
+.vine{height:16px;margin:20px 0 6px;background:
+  radial-gradient(circle 4px at 8% 55%, #5a8f3f 98%, transparent),
+  radial-gradient(circle 4px at 24% 35%, #7aa851 98%, transparent),
+  radial-gradient(circle 4px at 41% 60%, #5a8f3f 98%, transparent),
+  radial-gradient(circle 4px at 58% 35%, #7aa851 98%, transparent),
+  radial-gradient(circle 4px at 75% 60%, #5a8f3f 98%, transparent),
+  radial-gradient(circle 4px at 92% 45%, #7aa851 98%, transparent),
+  linear-gradient(90deg, transparent 0 1%, #9c8a5f 1% 99%, transparent 99%);
+  background-size:100% 100%,100% 100%,100% 100%,100% 100%,100% 100%,100% 100%,100% 2px;
+  background-repeat:no-repeat;background-position:center;}
+.cat-figure{float:right;width:46%;max-width:250px;margin:0 0 6px 12px;}
+.skip-row{display:flex;align-items:center;justify-content:center;gap:8px;margin:16px 0 0;font-size:12.5px;color:#4c3a22;font-weight:700;}
+.skip-row input{width:18px;height:18px;accent-color:#2f7d32;}
+.enter-note{text-align:center;font-size:12px;color:#5d492f;margin-top:2px;}
+
+/* ===== フッター ===== */
+footer{margin-top:34px;text-align:center;color:#4c3a22;font-size:13px;}
+footer .ring{width:120px;margin:0 auto 6px;}
+footer .owner{font-weight:900;font-size:14.5px;margin-top:4px;}
+:focus-visible{outline:3px solid #2f7d32;outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-top">
+    <div class="title"><img src="assets/title.png" alt="Colette防災情報センター"></div>
+    <div class="live-wrap">
+      <img src="assets/live.png" alt="LIVE">
+      <time id="clock">--:--:--</time>
+    </div>
+    <img class="house" src="assets/house.png" alt="Disaster Risk Reduction Center Colette">
+  </div>
+  <nav class="doors" aria-label="各コーナーへの入口">
+    <a href="app.html"><img src="assets/room.png" alt="監視ルーム（メイン画面へ入る）"></a>
+    <a href="Manual.html"><img src="assets/manual.png" alt="緊急対応マニュアル"></a>
+    <a href="app.html"><img src="assets/sos.png" alt="SOS発信機"></a>
+    <a href="https://mkms0822-ops.github.io/jishinhigaisouti/"><img src="assets/higai.png" alt="地震被害想定ツール"></a>
+  </nav>
+</header>
+
+<div class="ticker" id="ticker">
+  <span class="tag">最新情報</span>
+  <span class="belt"><span id="tickerText">Colette防災情報センターへようこそ。地震・気象・熱中症情報をリアルタイムでお届けしています。</span></span>
+</div>
+
+<div class="wrap">
+
+  <label class="skip-row">
+    <input type="checkbox" id="skipGate">
+    次回からこのページを飛ばして監視ルームへ直接入る
+  </label>
+  <p class="enter-note">🏡 上の「監視ルーム」をタップするとメイン画面に入れます</p>
+
+  <main>
+    <img class="sign-h" src="assets/h-yurai.png" alt="Coletteの名前の由来">
+    <section>
+      <p>我が家には猫が1匹います。3歳の女の子です。見た目はロシアンブルー。保護猫としてお迎えしました。実は、この子の名前がコレットちゃんといいます。</p>
+      <p>保護主さんが、お洒落な雰囲気とインスピレーションから名付けたといいます。洋酒の名前としても有名ですよね。</p>
+      <p>外で生活していた時代に子供を沢山授かり、その子たちもそれぞれ保護猫として引き取られていったそうです。それを見守るかのように最後まで残ったコレットちゃんを妻と娘と3人で譲渡会で一目ぼれして家族として迎えることとしました。お母さんを経験しただけあり、まだ3歳にもかかわらず落ち着きと優しさ溢れるコレットちゃんです。娘がイヤイヤして大声で泣き叫んで近づいても一切爪を立てずに、すーーっ　と距離を置いて、静かに様子を見る。まさに、お母ちゃんコレットです。</p>
+      <p>そんな、コレットちゃんの優しさ、落ち着き、慈悲深さに感銘を受け、屋号をColetteにしました。そして、弊社の防災理念としてColetteのそれぞれの文字を使って以下の言葉を選びました。</p>
+    </section>
+
+    <div class="vine" role="presentation"></div>
+
+    <section>
+      <ul class="colette">
+        <li><b>C</b><b>ollaboration（協力・連携）</b>：地域、行政、専門機関が手を取り合い、一丸となって災害に備える。</li>
+        <li><b>O</b><b>bservation（観察・監視）</b>：気象情報や周辺環境の変化を常に観察し、いち早く危機を察知する。</li>
+        <li><b>L</b><b>earning（学び）</b>：過去の災害事例や教訓から学び、知識をアップデートし続ける。</li>
+        <li><b>E</b><b>ducation（教育・啓発）</b>：正しい防災知識を周囲に広め、コミュニティ全体の意識を高める。</li>
+        <li><b>T</b><b>echnology（技術）</b>：防災技術を積極的に活用し、効果的な対策を講じる。</li>
+        <li><b>E</b><b>mpowerment（備えによる安心）</b>：防災準備を通じて、災害に対する強さと、立ち向かう力を高める。</li>
+      </ul>
+    </section>
+
+    <img class="sign-h" src="assets/h-fukurou.png" alt="ロゴマークのフクロウ">
+    <section>
+      <figure class="cat-figure" style="margin-top:0;">
+        <img src="assets/cat.png" alt="コレットちゃん（ロシアンブルーに似た灰色の保護猫）">
+      </figure>
+      <p>あらゆる動物の中で、唯一賢者として位置づけられているのがフクロウです。</p>
+      <p>西洋では、フクロウは古代ギリシャ神話から「知恵の象徴」とされてきました。知恵、工芸、戦略を司る女神アテナ（ローマ神話ではミネルヴァ）の使いがフクロウであったためです。フクロウの大きく見開いた目は、真実を見抜き、暗闇を見通す「知恵の目」と解釈されました。</p>
+      <p>暗闇の中でも活動できる能力が、物事の本質や真理を深く考察する賢者の姿と結びつき、「思慮深い」「落ち着きがある」というイメージに繋がりました。</p>
+      <p>日本においてフクロウが賢者とされるのは、語呂合わせや縁起の良い当て字が主です。「苦労しない」という意味で「不苦労（ふくろう）」として縁起が良いとされます。「福が来て、朗らかになる」という意味で「福来朗（ふくろう）」として幸福を招く賢者として親しまれています。</p>
+      <p>また、その静かに佇む姿から、古くから学問や知性の象徴としても捉えられてきました。</p>
+      <p>このように、西洋では「神話的・知性的な背景」日本では「語呂合わせや縁起の良さ」から賢者や知恵の象徴として親しまれています。</p>
+      <p>以前、趣味だった写真を撮りに広島県尾道市へ足を運んだ話です。尾道は坂の町として有名で、大林宣彦監督の映画の聖地としても有名です。その坂の途中にフクロウの石像がお地蔵さんのように祭られていました。</p>
+      <p>猫の町や尾道ラーメン、そして造船所としても有名な尾道ですが、フクロウの石像がひっそりと鎮座していたのがとても印象的で、海と坂の町の風景にとてもマッチしていてとても神秘的で、今でも素敵な思い出として忘れられないエピソードの一つです。</p>
+      <p>今回のロゴマークとしてフクロウを採用した理由のひとつでもある私の思い出です。</p>
+    </section>
+
+    <img class="sign-h small" src="assets/h-saigo.png" alt="最後に">
+    <section>
+      <p>コレットちゃんや森の賢者フクロウのように、暗闇でもあらゆるものが見通すことができる「監視と真実の目」と防災知識を養うべく、日々努力を惜しまず、精進してまいります。</p>
+      <p>リニューアルスタートしたColette防災情報センターをどうぞこれからも宜しくお願いいたします。</p>
+    </section>
+  </main>
+
+  <footer>
+    <img class="ring" src="assets/ring.png" alt="Colette防災情報センターのフクロウロゴ">
+    <div class="owner">運営責任者　古谷　浩二</div>
+    <p style="margin-top:12px;"><a href="app.html" style="color:#2f7d32;font-weight:900;">🏡 監視ルームに入る</a></p>
+  </footer>
+</div>
+
+<script>
+/* ===== LIVE時計 ===== */
+(function(){
+  var el = document.getElementById('clock');
+  function tick(){
+    var d = new Date();
+    var p = function(n){ return String(n).padStart(2,'0'); };
+    el.textContent = p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+/* ===== 「次回から直接入る」チェック ===== */
+(function(){
+  var cb = document.getElementById('skipGate');
+  try { cb.checked = localStorage.getItem('dwa_skip_gate') === '1'; } catch(e){}
+  cb.addEventListener('change', function(){
+    try { localStorage.setItem('dwa_skip_gate', cb.checked ? '1' : '0'); } catch(e){}
+  });
+})();
+
+/* ===== 最新情報ティッカー（記事タイトルを取得して流す） ===== */
+(function(){
+  var GAS_URL = "https://script.google.com/macros/s/AKfycbyZDX0JlROTMBbBIG_xkAWq8VHx7tcg7PF-dg4pZH0agHURP8rKURxEYDRRJHRrtqS_vg/exec";
+  fetch(GAS_URL + "?type=articles&_=" + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var arr = (d && (d.articles || d.rows || d.items)) || [];
+      if (!arr.length) return;
+      var titles = [];
+      for (var i = 0; i < Math.min(arr.length, 5); i++) {
+        var t = arr[i].title || arr[i]['タイトル'] || '';
+        if (t) titles.push('【' + t + '】');
+      }
+      if (titles.length) document.getElementById('tickerText').textContent = titles.join('　　');
+    })
+    .catch(function(){});
+})();
+</script>
+</body>
+</html>
